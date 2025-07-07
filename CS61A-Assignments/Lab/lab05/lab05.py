@@ -27,8 +27,18 @@ def insert_items(s, before, after):
     True
     """
     "*** YOUR CODE HERE ***"
-    # lab05 begin
-
+    # lab05 begin 直接遍历，利用insert方法即可
+    # 肯定不是想让我使用的方法，但是先这么处理
+    index = 0
+    length = len(s)
+    while index < length:
+        if s[index] == before:
+            s.insert(index + 1, after)
+            index += 1
+        length = len(s)
+        index += 1
+    return s
+    
 
 def group_by(s, fn):
     """Return a dictionary of lists that together contain the elements of s.
@@ -41,12 +51,12 @@ def group_by(s, fn):
     {9: [-3, 3], 4: [-2, 2], 1: [-1, 1], 0: [0]}
     """
     grouped = {}
-    for ____ in ____:
-        key = ____
+    for x in s:
+        key = fn(x)
         if key in grouped:
-            ____
+            grouped[key].append(x)
         else:
-            grouped[key] = ____
+            grouped[key] = [x]
     return grouped
 
 
@@ -72,6 +82,12 @@ def count_occurrences(t, n, x):
     2
     """
     "*** YOUR CODE HERE ***"
+    count = 0
+    for index in range(n):
+        if next(t) == x:
+            count += 1
+    return count
+
 
 
 def repeated(t, k):
@@ -95,36 +111,25 @@ def repeated(t, k):
     """
     assert k > 1
     "*** YOUR CODE HERE ***"
+    # 连续出现几次的数字
+    count = 1
+    before = -1
+    for x in t:
+        if x == before:
+            count += 1
+            if count == k:
+                return x
+        else:
+            count = 1
+            before = x
+    return 0
+        
+
 
 
 def sprout_leaves(t, leaves):
     """Sprout new leaves containing the labels in leaves at each leaf of
-    the original tree t and return the resulting tree.
-
-    >>> t1 = tree(1, [tree(2), tree(3)])
-    >>> print_tree(t1)
-    1
-      2
-      3
-    >>> new1 = sprout_leaves(t1, [4, 5])
-    >>> print_tree(new1)
-    1
-      2
-        4
-        5
-      3
-        4
-        5
-
-    >>> t2 = tree(1, [tree(2, [tree(3)])])
-    >>> print_tree(t2)
-    1
-      2
-        3
-    >>> new2 = sprout_leaves(t2, [6, 1, 2])
-    >>> print_tree(new2)
-    1
-      2
+    the
         3
           6
           1
@@ -146,6 +151,8 @@ def partial_reverse(s, start):
     [1, 2, 7, 6, 5, 3, 4]
     """
     "*** YOUR CODE HERE ***"
+    s[start:] = s[start:][::-1]
+
 
 
 

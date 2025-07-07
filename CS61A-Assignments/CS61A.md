@@ -257,7 +257,7 @@ list 列表
 
 ### 序列
 
-> ​	序列（sequence）是一组**有顺序的值的集合**，是计算机科学中的一个强大且基本的抽象概念。序列**并不是特定内置类型或抽象数据表示的实例**，而是一个包含不同类型数据间共享行为的集合。也就是说，序列有很多种类，但它们都具有共同的行为。
+> ​	序列（**sequence**）是一组**有顺序的值的集合**，是计算机科学中的一个强大且基本的抽象概念。序列**并不是特定内置类型或抽象数据表示的实例**，而是一个包含不同类型数据间共享行为的集合。也就是说，序列有很多种类，但它们都具有共同的行为。
 
 #### list 列表
 
@@ -551,7 +551,7 @@ def divide(quotients, divisors):
 
 下一个纯自己实现确实有点复杂。
 
-> 使用nonlocal引用闭包之外的变量。
+> 使用**nonlocal**引用闭包之外的变量。
 
 ```py
 def buy(fruits_to_buy, prices, total_amount):
@@ -610,7 +610,7 @@ def buy(fruits_to_buy, prices, total_amount):
 >
 > 
 
-一个交错洗牌的函数，zip就是把两个list对应位置的元素合成一个tuple元组。
+一个交错洗牌的函数，**zip**就是把两个list对应位置的元素合成一个tuple元组。
 
 
 
@@ -640,29 +640,170 @@ def shuffle(s):
     return res
 ```
 
+> 接下来我们会接触大量概念性的东西。
+>
 
+#### 局部状态 
 
+​	列表和字典拥有局部状态（local state），即它们可以在程序执行过程中的某个时间点修改自身的值。状态（state）就意味着当前的值有可能发生变化。
 
+​	函数也有状态，会改变状态的就不叫纯函数，很多coding中令人疑惑的错误就是没有理解函数状态的改变造成的，比如**iterator**迭代器。
 
+> 就是不要在迭代的过程中修改原来的序列。
 
+> 注意这里的nonlocal,一旦是非局部的，我们不会把这个balance的值和局部帧绑定起来。
+>
+> Python 中 **nonlocal** 声明的效果：当前执行帧之外的变量可以通过赋值语句更改。
 
+```py
+>>> def make_withdraw(balance):
+        """返回一个每次调用都会减少 balance 的 withdraw 函数"""
+        def withdraw(amount):
+            nonlocal balance                 # 声明 balance 是非局部的
+            if amount > balance:
+                return '余额不足'
+            balance = balance - amount       # 重新绑定
+            return balance
+        return withdraw
+```
 
+​	通过引入非局部语句，我们为赋值语句创建了双重作用。他们可以更改局部绑定 (local bindings)，也可以更改非局部绑定  (nonlocal  bindings)。事实上，赋值语句已经有了很多作用：它们可以创建新的变量，也可以为现有变量重新赋值。赋值也可以改变列表和字典的内容。Python 中赋值语句的多种作用可能会使执行赋值语句时的效果变得不太明显。作为程序员，我们有责任清楚地记录代码，以便其他人可以理解赋值的效果。
 
+> 那么有的时候，赋值语句高不清楚会让人很迷惑。
 
+​	**Python 特质 (Python Particulars)**。这种非局部赋值模式是具有高阶函数和词法作用域的编程语言的普遍特征。大多数其他语言根本不需要非局部语句。相反，非局部赋值通常是赋值语句的默认行为。
 
+​	**Python** 在变量名称查找方面也有一个不常见的限制：在一个函数体内，**多次出现的同一个变量名必须处于同一个运行帧**内。因此，**Python**  无法在非局部帧中查找某个变量名对应的值，然后在局部帧中为同样名称的变量赋值，因为同名变量会在同一函数的两个不同帧中被访问。此限制允许  Python 在执行函数体之前预先计算哪个帧包含哪个名称。当代码违反了这个限制时，程序会产生令人困惑的错误消息。
 
+​	正确理解包含 **nonlocal** 声明的代码的关键是记住：只有函数调用才能引入新帧。赋值语句只能更改现有帧中的绑定关系。
 
+​	**相同与变化 (Sameness and change)**。这些微妙之处的出现是因为，通过引入改变非局部环境的非纯函数，我们改变了表达式的性质。仅包含纯函数调用的表达式是引用透明 (referentially transparent) 的；即如果在函数中，用一个等于子表达式的值来替换子表达式，它的值不会改变。
 
+​	重新绑定操作违反了引用透明的条件，因为它们不仅仅是返回一个值；他们还会在执行过程中改变运行环境。当我们引入任意的重新绑定时，我们遇到了一个棘手的认识论问题：两个值相同意味着什么。在我们的计算环境模型中，两个单独定义的函数是不同的，因为对一个函数的更改可能不会反映在另一个函数中。
 
+> 关于这样的操作，我们不能随便绑定和引入别名。
 
+### 列表和字典实现 
 
+> 状态就意味着对象的存在。
+>
+> 带状态的函数就是一个对象。
 
+```py
+>>> def mutable_link():
+        """返回一个可变链表的函数"""
+        contents = empty
+        def dispatch(message, value=None):
+            nonlocal contents
+            if message == 'len':
+                return len_link(contents)
+            elif message == 'getitem':
+                return getitem_link(contents, value)
+            elif message == 'push_first':
+                contents = link(value, contents)
+            elif message == 'pop_first':
+                f = first(contents)
+                contents = rest(contents)
+                return f
+            elif message == 'str':
+                return join_link(contents, ", ")
+        return dispatch
+```
 
+​	**dispatch** 函数是实现抽象数据消息传递接口的通用方法。为实现消息分发，到目前为止，我们使用条件语句将消息字符串与一组固定的已知消息进行比较。
 
+> 注意下面这样的实现方式，不用ifelse,直接把str和定义的函数名称绑定起来。
+>
+> 而是使用字典，这就是**调度字典**。---》避免使用了nonlocal定义。
 
+```py
+def account(initial_balance):
+    def deposit(amount):
+        dispatch['balance'] += amount
+        return dispatch['balance']
+    def withdraw(amount):
+        if amount > dispatch['balance']:
+            return 'Insufficient funds'
+        dispatch['balance'] -= amount
+        return dispatch['balance']
+    dispatch = {'deposit':   deposit,
+                'withdraw':  withdraw,
+                'balance':   initial_balance}
+    return dispatch
 
+def withdraw(account, amount):
+    return account['withdraw'](amount)
+def deposit(account, amount):
+    return account['deposit'](amount)
+def check_balance(account):
+    return account['balance']
 
+a = account(20)
+deposit(a, 5)
+withdraw(a, 17)
+check_balance(a)
+```
 
+### 约束传递 (Propagating Constraints) 
+
+> ​	传统的计算机计算是单向的，但是如果要计算p * v = n * k * t这样的一个对象，我们要怎么处理。
+>
+
+​	比较复杂，但是简单来说还是一种编程方式，一种参数网络，更改其中的参数会对于网络中的其余部分产生影响。
+
+> 我们来做lab05。
+
+关于对象的引用
+
+is	是判断同一个对象。
+
+==	判断内容是否相同。
+
+理解这个过程中在干什么？
+
+```py
+>>> s = [3,4,5]
+>>> s.extend([s.append(9), s.append(10)])
+>>> s
+[3, 4, 5, 9, 10, None, None]
+```
+
+​	然后是`iter()`函数，关于序列的迭代器的讨论。
+
+​	这个lab要对于上面提到的概念非常熟悉。
+
+> ​	简单的示例代码，我把代码放在这里是为了当我看到的时候，知道该怎么使用和要注意些什么东西。
+
+```py
+   grouped = {}
+    for x in s:
+        key = fn(x)
+        if key in grouped:
+            grouped[key].append(x)
+        else:
+            grouped[key] = [x]
+    return grouped
+```
+
+> 利用强大的切片功能。
+>
+
+```py
+def partial_reverse(s, start):
+    """Reverse part of a list in-place, starting with start up to the end of
+    the list.
+
+    >>> a = [1, 2, 3, 4, 5, 6, 7]
+    >>> partial_reverse(a, 2)
+    >>> a
+    [1, 2, 7, 6, 5, 4, 3]
+    >>> partial_reverse(a, 5)
+    >>> a
+    [1, 2, 7, 6, 5, 3, 4]
+    """
+    "*** YOUR CODE HERE ***"
+    s[start:] = s[start:][::-1]
+```
 
 
 
