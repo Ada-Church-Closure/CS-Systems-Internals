@@ -10,6 +10,20 @@ def hailstone(n):
     1
     """
     "*** YOUR CODE HERE ***"
+    # 返回一个长度为n的数组的迭代器,怎么做到一直返回1？
+    # 使用yield关键字进行生成：暂时返回，懒惰生成数据。
+    while n != 1:
+      yield n
+      if n % 2 == 1:
+        n = 3 * n + 1
+      else:
+        n = n // 2
+    
+    while True:
+      yield 1
+      
+    
+        
 
 
 def merge(a, b):
@@ -27,14 +41,21 @@ def merge(a, b):
     >>> [next(result) for _ in range(10)]
     [2, 3, 5, 7, 8, 9, 11, 13, 14, 15]
     """
+    # 直接根据比较的结果进行处理就可以
     a_val, b_val = next(a), next(b)
+
     while True:
         if a_val == b_val:
-            "*** YOUR CODE HERE ***"
+            yield a_val
+            a_val = next(a)
+            b_val = next(b)
         elif a_val < b_val:
-            "*** YOUR CODE HERE ***"
+            yield a_val
+            a_val = next(a)
         else:
-            "*** YOUR CODE HERE ***"
+            yield b_val
+            b_val = next(b)
+
 
 
 def stair_ways(n):
@@ -51,7 +72,15 @@ def stair_ways(n):
     []
     """
     "*** YOUR CODE HERE ***"
-
+    # 虽然是简单的问题，当涉及到生成器的时候，我们就从生成器的行为上来考虑
+    if n == 0:
+        yield []
+    elif n > 0:
+        for way in stair_ways(n - 1):
+            yield [1] + way
+        for way in stair_ways(n - 2):
+            yield [2] + way
+   
 
 def yield_paths(t, value):
     """
@@ -88,11 +117,15 @@ def yield_paths(t, value):
     >>> sorted(list(path_to_2))
     [[0, 2], [0, 2, 1, 2]]
     """
+
+    # 能直接到某个位置的路径有哪些？
     if label(t) == value:
-        yield ____
+        yield [value]
+
     for b in branches(t):
-        for ____ in ____:
-            yield ____
+        for path in yield_paths(b, value):
+            # 这里要加入的是树根上的value才是正确的
+            yield [label(t)] + path
 
 
 
