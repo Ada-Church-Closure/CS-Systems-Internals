@@ -9,6 +9,8 @@
 > 笔者做这个课程的时候已经是大二结束了，所以不会重复很多基础的东西，比较跳跃。
 >
 > 资源来自于中文课本：https://composingprograms.netlify.app/
+>
+> 会摘录其中我觉得对我有用的内容。
 
 ## 1.1第一章 函数构建抽象
 
@@ -83,7 +85,7 @@ print(res)
 
 #### 1.1.1.5**柯里化（Curring）**
 
-> 我认为这里的便捷性是，有一个函数有两个参数，你在调用的时候可以分两次调用分别传入两个参数。
+> ​	我认为这里的便捷性是，有一个函数有两个参数，你在调用的时候可以分两次调用分别传入两个参数。
 
 ```python
 >>> def curried_pow(x):
@@ -868,27 +870,247 @@ def stair_ways(n):
 
 ### 1.2.7面向对象编程 OOP
 
-> ​	关于py的**OOP**部分，我一直关于这个不是很理解，我认为想要学明白OOP,一定要在工程实践中才能理解透彻。再多的理论都很难让人理解具体的用法和为什么要这样使用，设计模式这样的东西也是一样，总之我们来看一看。
+> ​	关于py的**OOP**部分，我一直关于这个不是很理解，在此之前我已经解除了Java和Cpp的OOP部分，我认为想要学明白OOP,一定要在工程实践中才能理解透彻。再多的理论都很难让人理解具体的用法和为什么要这样使用，**设计模式**这样的东西也是一样，总之我们来看一看。
+
+#### 1.2.7.1对象和类
+
+类是模板，对象是初始化的实例。
+
+对象具有方法和属性。
+
+#### 1.2.7.2类的定义 
+
+```py
+class <name>:
+    <suite>
+```
+
+> 基本概念。
+
+构造函数：
+
+```py
+>>> class Account:
+        def __init__(self, account_holder):
+            self.balance = 0
+            self.holder = account_holder
+```
+
+​	一般来说，我们使用参数名称 `self` 作为**构造函数的第一个参数**，它**会自动绑定到正在实例化的对象**。几乎所有的 Python 代码都遵守这个规定。这就类似于Java中的this，注意py中的语法。
+
+> 对象的独立性。
+
+```py
+>>> a is a
+True
+>>> a is not b
+True
+```
+
+我们怎么定义方法：
+
+```py
+>>> class Account:
+    # 构造函数
+        def __init__(self, account_holder):
+            self.balance = 0
+            self.holder = account_holder
+        def deposit(self, amount):
+            self.balance = self.balance + amount
+            return self.balance
+        def withdraw(self, amount):
+            if amount > self.balance:
+                return 'Insufficient funds'
+            self.balance = self.balance - amount
+            return self.balance
+```
+
+​	为了使用点表达式，我们的方法都要使用**self首参**：每个方法都包含着一个特殊的首参 `self` ，该参数绑定调用该方法的对象。例如，假设在特定的 `Account` 对象上调用 `deposit` 并传递单个参数：存入的金额。对象本身就被绑定到 `self` ，而传入的参数绑定到 `amount` 。所有调用的方法都可以通过 `self` 参数来访问对象，因此它们**都可以访问和操作对象的状态**。
+
+#### 1.2.7.3消息传递和点表达式 
+
+​	**方法和函数**：在对象上调用方法时，该对象将作为第一个参数隐式传递给该方法。也就是说，点左侧的 `<expression>` 值的对象将自动作为第一个参数传递给点表达式右侧命名的方法。因此，对象绑定到参数 `self`。
+
+​	为了实现自动 `self` 绑定，Python 区分了我们从文本开头就一直在创建的函数和绑定方法，它们将函数和将调用该方法的对象耦合在一起。绑定方法值已与其第一个参数（调用它的实例）相关联，在调用该方法时将命名为 `self`。
+
+​	作为一个类的属性，这是一个函数，但是作为一个实例的属性，这是一个方法（自动绑定的）。
+
+```py
+>>> type(Account.deposit)
+<class 'Function'>
+>>> type(spock_account.deposit)
+<class 'method'>
+```
+
+​	这两个结果的区别仅在于第一个是参数为 `self` 和 `amount` 的标准双参数函数。第二种是单参数方法，调用方法时，名称 `self` 将自动绑定到名为 `spock_account` 的对象，而参数 `amount` 将绑定到传递给方法的参数。这两个值（无论是函数值还是绑定方法值）都与相同的 `deposit` 函数体相关联。
+
+​	那么我们就可以这样使用方法。
+
+```py
+>>> Account.deposit(spock_account, 1001)    # 函数 deposit 接受两个参数
+1011
+>>> spock_account.deposit(1000)             # 方法 deposit 接受一个参数
+2011
+```
+
+> ​	**命名约定**：类名通常使用 CapWords 约定（也称为 CamelCase，因为名称中间的大写字母看起来像驼峰）编写。方法名称遵循使用下划线分隔的小写单词命名函数的标准约定。
+>
+> ​	在某些情况下，有一些实例变量和方法与对象的维护和一致性相关，我们不希望对象的用户看到或使用。它们不是类定义的抽象的一部分，而是实现的一部分。Python 的约定规定，如果属性名称以下划线开头，则只能在类本身的方法中访问它，而不是用户访问。（这就是私有的方法）
+
+#### 1.2.7.4类属性
+
+就是静态变量，可以认为是共有的。
+
+```py
+>>> class Account:
+        interest = 0.02            # 类属性
+        def __init__(self, account_holder):
+            self.balance = 0
+            self.holder = account_holder
+        # 在这里定义更多的方法
+```
+
+如果同名，我们优先考虑实例的属性，接着再考虑类属性：
+
+1. 点表达式左侧的 `<expression>` ，生成点表达式的对象。
+2. `<name>` 与该对象的实例属性匹配；如果存在具有该名称的属性，则返回属性值。
+3. 如果实例属性中没有 `<name>` ，则在类中查找 `<name>`，生成类属性。
+4. 除非它是函数，否则返回属性值。如果是函数，则返回该名称绑定的方法。
+
+#### 1.2.7.5继承 
+
+​	在面向对象编程范式中，我们经常会发现不同类型之间存在关联，尤其是在类的专业化程度上。即使两个类具有相似的属性，它们的特殊性也可能不同，为了实现逻辑上相同的类之间的差异性。
+
+​	`CheckingAccount` 是 `Account` 的特化。在 OOP 术语中，通用帐户将用作 `CheckingAccount` 的基类，而 `CheckingAccount` 将用作 `Account` 的子类。术语基类（base class）也常叫父类（parent class）和超类（superclass），而子类（subclass）也叫孩子类（child class）。
+
+我们怎么从基类做继承的操作：
+
+```py
+>>> class Account:
+        """一个余额非零的账户。"""
+        interest = 0.02
+        def __init__(self, account_holder):
+            self.balance = 0
+            self.holder = account_holder
+        def deposit(self, amount):
+            """存入账户 amount，并返回变化后的余额"""
+            self.balance = self.balance + amount
+            return self.balance
+        def withdraw(self, amount):
+            """从账号中取出 amount，并返回变化后的余额"""
+            if amount > self.balance:
+                return 'Insufficient funds'
+            self.balance = self.balance - amount
+            return self.balance
+```
 
 
 
+```py
+>>> class CheckingAccount(Account):
+        """从账号取钱会扣出手续费的账号"""
+        withdraw_charge = 1
+        interest = 0.01
+        def withdraw(self, amount):
+            return Account.withdraw(self, amount + self.withdraw_charge)
+```
+
+对于基类的方法进行重写。
+
+关于多重继承：
+
+```py
+>>> class SavingsAccount(Account):
+        deposit_charge = 2
+        def deposit(self, amount):
+            return Account.deposit(self, amount - self.deposit_charge)
+```
+
+同时继承两个基类，当我们使用这个类的方法的时候，它自动就会使用两个基类中重写的方法。
+
+```py
+>>> class AsSeenOnTVAccount(CheckingAccount, SavingsAccount):
+        def __init__(self, account_holder):
+            self.holder = account_holder
+            self.balance = 1           # 赠送的 1 $!
+```
+
+那么重名？有具体的方法解析的顺序。
+
+#### 1.2.7.6对象的作用 
+
+> ​	多范式语言，如 **Python**，允许程序员将组织范式与适当的问题相匹配。学会识别何时引入新类，而不是新函数，以简化或模块化程序，是软件工程中一项重要的设计技能，值得认真关注。
+>
+> ​	接下来是lab06,关于OOP的基本概念。
+
+```py
+class Mint:
+    """A mint creates coins by stamping on years.
+
+    The update method sets the mint's stamp to Mint.present_year.
+
+    >>> mint = Mint()
+    >>> mint.year
+    2024
+    >>> dime = mint.create(Dime)
+    >>> dime.year
+    2024
+    >>> Mint.present_year = 2104  # Time passes
+    >>> nickel = mint.create(Nickel)
+    >>> nickel.year     # The mint has not updated its stamp yet
+    2024
+    >>> nickel.worth()  # 5 cents + (80 - 50 years)
+    35
+    >>> mint.update()   # The mint's year is updated to 2104
+    >>> Mint.present_year = 2179     # More time passes
+    >>> mint.create(Dime).worth()    # 10 cents + (75 - 50 years)
+    35
+    >>> Mint().create(Dime).worth()  # A new mint has the current year
+    10
+    >>> dime.worth()     # 10 cents + (155 - 50 years)
+    115
+    >>> Dime.cents = 20  # Upgrade all dimes!
+    >>> dime.worth()     # 20 cents + (155 - 50 years)
+    125
+    """
+    present_year = 2024
+
+    def __init__(self):
+        self.update()
+
+    def create(self, coin):
+        "*** YOUR CODE HERE ***"
+        return coin(self.year)
 
 
+    def update(self):
+        "*** YOUR CODE HERE ***"
+        self.year = Mint.present_year
 
+class Coin:
+    cents = None # will be provided by subclasses, but not by Coin itself
 
+    def __init__(self, year):
+        self.year = year
 
+    def worth(self):
+        "*** YOUR CODE HERE ***"
+        if Mint.present_year - self.year - 50 > 0:
+            return self.cents + Mint.present_year - self.year - 50
+        else:
+            return self.cents    
+class Nickel(Coin):
+    cents = 5
 
+class Dime(Coin):
+    cents = 10
+```
 
+​	比较简单的关于继承的逻辑，只有几行代码，但是一定要搞清楚在干嘛。
 
-
-
-
-
-
-
-
-
-
+> 接下来我们做pro中的cats部分。
+>
+> 有点意思，测试打字速度并且有自动纠错的功能。
 
 
 

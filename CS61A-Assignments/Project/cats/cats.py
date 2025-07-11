@@ -38,6 +38,14 @@ def pick(paragraphs, select, k):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    # 返回第K个筛选条件为True的字符串即可
+    count = -1
+    for p in paragraphs:
+        if select(p):
+            count += 1
+            if count == k:
+                return p
+    return ''
     # END PROBLEM 1
 
 
@@ -58,6 +66,18 @@ def about(subject):
 
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    # about返回一个函数，接收一个字符串，判断这个字符串中是否含有相关的单词
+    # 比较简单，直接双重循环对应一下就可以，用KMP算法反而可能会出现奇怪的错误，因为要求包含一个完整的单词
+    def is_include(given_string):
+        given_string = remove_punctuation(given_string)
+        given_string = lower(given_string)
+        string_splited = split(given_string)
+        for s1 in subject:
+            for s2 in string_splited:
+                if s1 == s2:
+                    return True
+        return False
+    return is_include
     # END PROBLEM 2
 
 
@@ -88,6 +108,22 @@ def accuracy(typed, source):
     source_words = split(source)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    if (len(typed_words) == 0 and len(source_words) == 0):
+        return 100.0
+    if len(typed_words) == 0 or len(source_words) == 0:
+        return 0.0
+    
+    all_word_numbers = len(source_words)
+    all_typed_numbers = len(typed_words)
+    right_typed_numbers = 0
+    for index in range(min(all_word_numbers, all_typed_numbers)):
+        if typed_words[index] == source_words[index]:
+            right_typed_numbers += 1
+
+    if source == 'a b c d':
+        print(right_typed_numbers)
+        print(all_word_numbers)
+    return (right_typed_numbers / max(all_typed_numbers, all_word_numbers)) * 100
     # END PROBLEM 3
 
 
