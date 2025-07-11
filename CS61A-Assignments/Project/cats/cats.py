@@ -116,14 +116,17 @@ def accuracy(typed, source):
     all_word_numbers = len(source_words)
     all_typed_numbers = len(typed_words)
     right_typed_numbers = 0
+    wrong_typed_numbers = 0
     for index in range(min(all_word_numbers, all_typed_numbers)):
         if typed_words[index] == source_words[index]:
             right_typed_numbers += 1
+        else:
+            wrong_typed_numbers += 1
+    # 这里要注意正确率的计算方法以及超出的字数都要算成是错误的
+    if all_typed_numbers > all_word_numbers:
+        wrong_typed_numbers += (all_typed_numbers - all_word_numbers)
 
-    if source == 'a b c d':
-        print(right_typed_numbers)
-        print(all_word_numbers)
-    return (right_typed_numbers / max(all_typed_numbers, all_word_numbers)) * 100
+    return (right_typed_numbers / (right_typed_numbers + wrong_typed_numbers)) * 100
     # END PROBLEM 3
 
 
@@ -142,6 +145,10 @@ def wpm(typed, elapsed):
     assert elapsed > 0, "Elapsed time must be positive"
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    # typed是字符串，elapsed是过去这段时间
+    # 计算的逻辑就很简单
+    typed_length = len(typed)
+    return (typed_length / (5 * elapsed)) * 60
     # END PROBLEM 4
 
 
@@ -149,7 +156,7 @@ def wpm(typed, elapsed):
 # Phase 4 (EC) #
 ################
 
-
+# 额外的挑战，用memo来提升效率
 def memo(f):
     """A general memoization decorator."""
     cache = {}
@@ -203,6 +210,26 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    # 实现一个简单的自动补全功能
+    find_index = -1
+    index = 0
+    min_diff = limit + 1
+    flag = False
+    for s in word_list:
+        if s == typed_word:
+            flag = True
+            break
+
+        number = abs(diff_function(typed_word, s, limit))
+        # 注意这里的条件控制的问题
+        if number < min_diff and number <= limit:
+            min_diff = number
+            find_index = index
+        index += 1
+    if find_index != -1 and flag == False:
+        return word_list[find_index]
+    else:
+        return typed_word
     # END PROBLEM 5
 
 
@@ -229,8 +256,42 @@ def furry_fixes(typed, source, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
-    # END PROBLEM 6
+    # 逻辑上就是编辑距离，但是不能使用dp来实现，而是用string的切片来传递参数
+    # 删除，增加和修改
+    # n = len(typed)
+    # m = len(source)
+    
+    # if n == 0 or m == 0:
+    #     return n + m
+    # # 初始化一个二维dp数组
+
+    # dp = [ [0] * (m + 1) for _ in range(n + 1)]
+    # for index in range(n + 1):
+    #     dp[index][0] = index
+    # for index in range(m + 1):
+    #     dp[0][index] = index
+    
+    # for i in range(1, n + 1):
+    #     for j in range(1, m + 1):
+    #         a = dp[i - 1][j] + 1
+    #         b = dp[i][j - 1] + 1
+    #         c = dp[i - 1][j - 1]
+
+    #         if typed[i - 1] != source[j - 1]:
+    #             c += 1
+    #         dp[i][j] = min(a, b, c)
+
+    # if dp[n][m] > limit:
+    #     return limit + 1
+    # else:
+    #     return dp[n][m]
+
+    # 好像理解错了，直接一个一个比对就可以
+
+    
+
+    
+
 
 
 def minimum_mewtations(typed, source, limit):
