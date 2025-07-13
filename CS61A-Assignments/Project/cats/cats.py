@@ -255,6 +255,16 @@ def furry_fixes(typed, source, limit):
     >>> furry_fixes("rose", "hello", big_limit)   # Substitute: r->h, o->e, s->l, e->l, length difference of 1.
     5
     """
+    # 不能使用whilefor循环
+    # min_length = min(len(typed), len(source))
+    # max_length = max(len(typed), len(source))
+
+    # count = max_length - min_length
+
+    # for index in range(min_length):
+    #     if typed[index] != source[index]:
+    #         count += 1
+    # return count
     # BEGIN PROBLEM 6
     # 逻辑上就是编辑距离，但是不能使用dp来实现，而是用string的切片来传递参数
     # 删除，增加和修改
@@ -287,12 +297,15 @@ def furry_fixes(typed, source, limit):
     #     return dp[n][m]
 
     # 好像理解错了，直接一个一个比对就可以
-
-    
-
-    
-
-
+    # 注意简单的剪枝的逻辑，没有办法记录就在limit上面做手脚
+    if typed == '' or source == '':
+        return abs(len(typed) - len(source))
+    elif limit < 0:
+        return 0
+    elif typed[0] == source[0]:
+        return furry_fixes(typed[1:], source[1:], limit)
+    elif typed[0] != source[0]:
+        return furry_fixes(typed[1:], source[1:], limit - 1) + 1
 
 def minimum_mewtations(typed, source, limit):
     """A diff function for autocorrect that computes the edit distance from TYPED to SOURCE.
