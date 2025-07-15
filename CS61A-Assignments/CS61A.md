@@ -1111,14 +1111,29 @@ class Dime(Coin):
 > 接下来我们做pro中的cats部分。
 >
 > 有点意思，测试打字速度并且有自动纠错的功能。
+>
+> 还要实现多个玩家的功能。
 
+```OK
+Point breakdown
+    Problem 1: 1.0/1
+    Problem 2: 1.0/1
+    Problem 3: 2.0/2
+    Problem 4: 1.0/1
+    Problem 5: 2.0/2
+    Problem 6: 3.0/3
+    Problem 7: 3.0/3
+    Problem 8: 2.0/2
+    Problem 9: 1.0/1
+    Problem 10: 3.0/3
 
+Score:
+    Total: 19.0
+```
 
-
-
-
-
-
+> ​	ok,那么也是拿下了，整体也不难，主要就是有一个编辑距离的问题和熟悉基本的语法。
+>
+> 不做附加问题了，主要就是装饰器，memo优化的内容，来不及了。
 
 
 

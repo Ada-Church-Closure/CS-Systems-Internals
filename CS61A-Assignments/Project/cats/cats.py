@@ -256,46 +256,6 @@ def furry_fixes(typed, source, limit):
     5
     """
     # 不能使用whilefor循环
-    # min_length = min(len(typed), len(source))
-    # max_length = max(len(typed), len(source))
-
-    # count = max_length - min_length
-
-    # for index in range(min_length):
-    #     if typed[index] != source[index]:
-    #         count += 1
-    # return count
-    # BEGIN PROBLEM 6
-    # 逻辑上就是编辑距离，但是不能使用dp来实现，而是用string的切片来传递参数
-    # 删除，增加和修改
-    # n = len(typed)
-    # m = len(source)
-    
-    # if n == 0 or m == 0:
-    #     return n + m
-    # # 初始化一个二维dp数组
-
-    # dp = [ [0] * (m + 1) for _ in range(n + 1)]
-    # for index in range(n + 1):
-    #     dp[index][0] = index
-    # for index in range(m + 1):
-    #     dp[0][index] = index
-    
-    # for i in range(1, n + 1):
-    #     for j in range(1, m + 1):
-    #         a = dp[i - 1][j] + 1
-    #         b = dp[i][j - 1] + 1
-    #         c = dp[i - 1][j - 1]
-
-    #         if typed[i - 1] != source[j - 1]:
-    #             c += 1
-    #         dp[i][j] = min(a, b, c)
-
-    # if dp[n][m] > limit:
-    #     return limit + 1
-    # else:
-    #     return dp[n][m]
-
     # 好像理解错了，直接一个一个比对就可以
     # 注意简单的剪枝的逻辑，没有办法记录就在limit上面做手脚
     if typed == '' or source == '':
@@ -324,24 +284,35 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________: # Base cases should go here, you may add more base cases as needed.
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-    # Recursive cases should go below here
-    if ___________: # Feel free to remove or add additional cases
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-    else:
-        add = ... # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+    # 那这个应该是真的编辑距离,直接用dp就可以解决。
+    n = len(typed)
+    m = len(source)
+    
+    if n == 0 or m == 0:
+        return n + m
+    # 初始化一个二维dp数组
 
+    dp = [ [0] * (m + 1) for _ in range(n + 1)]
+    for index in range(n + 1):
+        dp[index][0] = index
+    for index in range(m + 1):
+        dp[0][index] = index
+    
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            # 我们可以认为只有减少或者修改这两种操作
+            a = dp[i - 1][j] + 1
+            b = dp[i][j - 1] + 1
+            c = dp[i - 1][j - 1]
+            # 如果不一样的话就给dp[i - 1][j - 1] + 1表明进行了修改
+            if typed[i - 1] != source[j - 1]:
+                c += 1
+            dp[i][j] = min(a, b, c)
+
+    if dp[n][m] > limit:
+        return limit + 1
+    else:
+        return dp[n][m]
 
 # Ignore the line below
 minimum_mewtations = count(minimum_mewtations)
@@ -350,7 +321,36 @@ minimum_mewtations = count(minimum_mewtations)
 def final_diff(typed, source, limit):
     """A diff function that takes in a string TYPED, a string SOURCE, and a number LIMIT.
     If you implement this function, it will be used."""
-    assert False, "Remove this line to use your final_diff function."
+    n = len(typed)
+    m = len(source)
+    
+    if n == 0 or m == 0:
+        return n + m
+    # 初始化一个二维dp数组
+
+    dp = [ [0] * (m + 1) for _ in range(n + 1)]
+    for index in range(n + 1):
+        dp[index][0] = index
+    for index in range(m + 1):
+        dp[0][index] = index
+    
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            # 我们可以认为只有减少或者修改这两种操作
+            a = dp[i - 1][j] + 1
+            b = dp[i][j - 1] + 1
+            c = dp[i - 1][j - 1]
+            # 如果不一样的话就给dp[i - 1][j - 1] + 1表明进行了修改
+            if typed[i - 1] != source[j - 1]:
+                c += 1
+            dp[i][j] = min(a, b, c)
+
+    if dp[n][m] > limit:
+        return limit + 1
+    else:
+        return dp[n][m]
+
+
 
 
 FINAL_DIFF_LIMIT = 6  # REPLACE THIS WITH YOUR LIMIT
@@ -385,7 +385,22 @@ def report_progress(typed, source, user_id, upload):
     0.2
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    progress = {
+        'id': user_id,
+        'progress': 0
+    }
+    len_source = len(source)
+    len_typed = len(typed)
+
+    length = min(len_source, len_typed)
+    count = 0
+    for index in range(length):
+        if typed[index] != source[index]:
+            break
+        count += 1
+    progress['progress'] = count / len_source
+    upload(progress)
+    return progress['progress'] 
     # END PROBLEM 8
 
 
@@ -409,7 +424,13 @@ def time_per_word(words, timestamps_per_player):
     """
     tpp = timestamps_per_player  # A shorter name (for convenience)
     # BEGIN PROBLEM 9
-    times = []  # You may remove this line
+    # 怎么定义一个二维数组的方法
+    times = [[] for _ in range(len(tpp))]
+
+    for i in  range(len(timestamps_per_player)):
+        for j in range(1, len(timestamps_per_player[0])):
+            times[i].append(timestamps_per_player[i][j] - timestamps_per_player[i][j - 1])
+
     # END PROBLEM 9
     return {'words': words, 'times': times}
 
@@ -436,7 +457,19 @@ def fastest_words(words_and_times):
     player_indices = range(len(times))  # contains an *index* for each player
     word_indices = range(len(words))    # contains an *index* for each word
     # BEGIN PROBLEM 10
-    "*** YOUR CODE HERE ***"
+    # 相当于就是每个人打字最快的一个列表
+    ans = [[] for _ in player_indices]
+    for i in word_indices:
+        index = 0
+        shortest_time = 2e10
+        for j in player_indices:
+            time = get_time(times, j, i)
+            if time < shortest_time:
+                shortest_time = time
+                index = j
+        ans[index].append(words[i])
+    return ans
+
     # END PROBLEM 10
 
 
