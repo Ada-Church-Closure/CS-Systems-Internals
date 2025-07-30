@@ -1,16 +1,16 @@
 # CS61A：Structure and Interpretation of Computer Programs
 
-> 学习一下py，再打一打编程的基础，因为课程lab的质量很高。
+> ​	相当于简单学习一下py，再打一打编程的基础，因为课程lab的质量很高。
 >
 > **坚持下去，哪怕它没有学分。**
 >
-> 这也是计算机的一大圣经(计算机程序的构造和解释)了，但是我还没有好好理解过。
+> ​	这也是计算机的一大圣经(计算机程序的构造和解释)了，但是我还没有好好理解过。
 >
-> 笔者做这个课程的时候已经是大二结束了，所以不会重复很多基础的东西，比较跳跃。
+> ​	笔者做这个课程的时候已经是大二结束了，所以不会重复很多基础的东西，比较跳跃。
 >
-> 资源来自于中文课本：https://composingprograms.netlify.app/
+> ​	资源来自于中文课本：https://composingprograms.netlify.app/
 >
-> 会摘录其中我觉得对我有用的内容。
+> ​	会摘录其中我觉得对我有用的内容(未报备)。我认为有些部分翻译的很抽象.如果你英语还可以,可以对照着看.
 
 ## 1.1第一章 函数构建抽象
 
@@ -870,7 +870,7 @@ def stair_ways(n):
 
 ### 1.2.7面向对象编程 OOP
 
-> ​	关于py的**OOP**部分，我一直关于这个不是很理解，在此之前我已经解除了Java和Cpp的OOP部分，我认为想要学明白OOP,一定要在工程实践中才能理解透彻。再多的理论都很难让人理解具体的用法和为什么要这样使用，**设计模式**这样的东西也是一样，总之我们来看一看。
+> ​	关于py的**OOP**部分，我一直关于这个不是很理解，在此之前我已经接触了Java和Cpp的OOP部分，我认为想要学明白OOP,一定要在工程实践中才能理解透彻。再多的理论都很难让人理解具体的用法和为什么要这样使用，**设计模式**这样的东西也是一样，总之我们来看一看。
 
 #### 1.2.7.1对象和类
 
@@ -1134,38 +1134,442 @@ Score:
 > ​	ok,那么也是拿下了，整体也不难，主要就是有一个编辑距离的问题和熟悉基本的语法。
 >
 > 不做附加问题了，主要就是装饰器，memo优化的内容，来不及了。
+>
+> ​	接下来我们先把第二章的内容看完。再去做作业之类的。
+
+### 1.2.8实现类和对象
+
+​	用字典可以实现,并且函数可以实现一切.
+
+​	有点抽象,总之就是使用调度字段来实现功能.
+
+### 1.2.9对象抽象
+
+#### 1.2.9.1字符串转换
+
+抽象数据描述--->泛型函数
+
+py对于一个原始值的字符串表示:
+
+```py
+>>> 12e12
+12000000000000.0
+>>> print(repr(12e12))
+12000000000000.0
+```
+
+如果没有这个原始值,就是一个尖括号的字符串描述:
+
+```py
+>>> repr(min)
+'<built-in function min>'
+```
+
+str构造器不相同的地方:
+
+```py
+>>> from datetime import date
+>>> tues = date(2011, 9, 12)
+>>> repr(tues)
+'datetime.date(2011, 9, 12)'
+>>> str(tues)
+'2011-09-12'
+```
+
+​	定义 `repr` 函数带来了一个新的挑战：我们想要它正确地应用于所有的数据类型，即使是那些实现 `repr` 时还不存在的类型。我们希望它是一个**通用的或者多态（polymorphic）的函数**，可以被应用于数据的多种（多）不同形式（态）。
+
+​	在这情况下，对象系统提供了一种优雅的解决方案：`repr` 函数总是在其参数值上调用一个名为 `__repr__` 的方法。
+
+```py
+>>> tues.__repr__()
+'datetime.date(2011, 9, 12)'
+```
+
+​	通过在用户定义类中实现这个相同的方法，我们可以将 `repr` 函数的适用范围扩展到将来我们创建的任何类。这个例子突出了点表达式的另一个优势，那就是它们提供了一种机制，可以把现有的函数的作用域扩展到新的对象类型。
+
+#### 1.2.9.2专用方法
+
+> ​	在 Python 中，某些特殊名称会在特殊情况下被 Python 解释器调用。例如，类的 `__init__` 方法会在对象被创建时自动调用。`__str__` 方法会在打印时自动调用，`__repr__` 方法会在交互式环境显示其值的时候自动调用。
+
+​	这就是"专用".
+
+​	一般任务一个对象是True,但是可以定义\__bool__,当我们想按照自己的逻辑判断真假的时候,就会自动调用这个函数.
+
+```py
+>>> Account.__bool__ = lambda self: self.balance != 0
+```
+
+```py
+>>> bool(Account('Jack'))
+False
+>>> if not Account('Jack'):
+        print('Jack has nothing')
+Jack has nothing
+```
+
+比如len:
+
+```py
+>>> len('Go Bears!')
+9
+```
+
+实际上是因为所有序列的内置类型都设置了\__len__的方法:
+
+```py
+>>> 'Go Bears!'.__len__()
+9
+```
+
+`__getitem__` 方法由元素选择操作符调用，但也可以直接调用它。
+
+```py
+>>> 'Go Bears!'[3]
+'B'
+>>> 'Go Bears!'.__getitem__(3)
+'B'
+```
+
+考虑这个高阶函数:
+
+```py
+>>> def make_adder(n):
+        def adder(k):
+            return n + k
+        return adder
+
+>>> add_three = make_adder(3)
+>>> add_three(4)
+7
+```
+
+可以定义一个类,看起来就像是一个高阶函数,利用\__call__方法:
+
+```py
+>>> class Adder(object):
+        def __init__(self, n):
+            self.n = n
+        def __call__(self, k):
+            return self.n + k
+>>> add_three_obj = Adder(3)	# 创建一个对象的时候会调用__call__方法
+>>> add_three_obj(4)
+7
+```
+
+> ​	算术运算。特定的方法也可以定义应用在用户定义的对象上的内置操作符的行为。为了提供这种通用性，Python 遵循特定的协议来应用每个操作符。例如，为了计算包含 `+` 操作符的表达式，Python 会检查操作符左右两侧的运算对象上是否有特定的方法。首先 Python 在左侧运算对象上检查其是否有 `__add__` 方法，然后在右侧运算对象上检查其是否有 `__radd__` 方法。如果找到了其中一个方法，就会将另一个运算对象的值作为它的参数来调用这个方法。
+>
+
+#### 1.2.9.3多重表示
+
+​	对于一个相同的数据对象,在不同的场景下我们可能想使用不同的表示方法,比如复数.
+
+> ​	实现的逻辑是自顶向下的.
+
+比如实现复数系统,这是一个超类:
+
+```py
+>>> class Number:
+        def __add__(self, other):
+            return self.add(other)
+        def __mul__(self, other):
+            return self.mul(other)
+```
+
+这是复数,具体来实现add和mul的逻辑:
 
 
+```py
+>>> class Complex(Number):
+        def add(self, other):
+            return ComplexRI(self.real + other.real, self.imag + other.imag)
+        def mul(self, other):
+            magnitude = self.magnitude * other.magnitude
+            return ComplexMA(magnitude, self.angle + other.angle)
+```
 
+这个实现假定存在两个表示复数的类，分别对应他们的两种自然表示形式。
 
+- `ComplexRI` 使用实部和虚部构建一个复数。
+- `ComplexMA` 使用幅度和角度构建一个复数。
 
+​	我们怎么保证多重属性之间是共通的,比如实部和虚部发生变化的时候,对应的弧度和幅值也会发生相应的变化.
 
+> ​	Python 有一种简单的计算属性的特性，可以通过零参数函数实时的计算属性。`@property` 修饰符允许函数在没有调用表达式语法（表达式后跟随圆括号）的情况下被调用。`Complex` 类存储了 `real` 和 `imag` 属性并在需要时计算 `magnitude` 和 `angle` 属性。
 
+实际上这是一种计算出来的属性:
 
+```py
+>>> from math import atan2
+>>> class ComplexRI(Complex):
+        def __init__(self, real, imag):
+            self.real = real
+            self.imag = imag
+        @property
+        def magnitude(self):
+            return (self.real ** 2 + self.imag ** 2) ** 0.5
+        @property
+        def angle(self):
+            return atan2(self.imag, self.real)
+        def __repr__(self):
+            return 'ComplexRI({0:g}, {1:g})'.format(self.real, self.imag)
+```
 
+调用的时候:
 
+```py
+>>> ri = ComplexRI(5, 12)
+>>> ri.real
+5
+>>> ri.magnitude
+13.0
+>>> ri.real = 9
+>>> ri.real
+9
+>>> ri.magnitude
+15.0
+```
 
+​	@property是用本身的属性在调用的时候可以进行零参数的实时计算,他并没有改变什么具有状态的值.
 
+> ​	实际上我认为这并没有达到我想象中的效果,因为**本质上还是持有不同的类**.
 
+> ​	使用接口来编码多重表示具有十分吸引人的特点。**每一种表示形式的类都可以被单独开发**；它们只需要就它们共享的属性名称和和对于这些属性的行为条件达成一致。接口还具有可添加性。如果程序员想要添加一个复数的第三方表现形式到同一个程序中，他们只需要创建一个拥有相同属性名称的类即可。
+>
 
+但是一定要约定相同的转换方式,但是如果有三个或者多个表示形式的时候,这样的表示方式还合适么?
 
+#### 1.2.9.4泛型函数
 
+​	我们上面的Complex.add的方法就是一个泛型的函数,因为可以接受两个类类型的参数.
 
+> ​	使用接口和消息传递只是多种可以被用于实现泛型函数的方法中的一种。在本节我们将会考虑另外两个方法：**类型派发和类型强制转换**。
 
+比如我们加上一个Rational类来实现Number:
 
+```py
+>>> from fractions import gcd
+>>> class Rational(Number):
+        def __init__(self, numer, denom):
+            g = gcd(numer, denom)
+            self.numer = numer // g
+            self.denom = denom // g
+        def __repr__(self):
+            return 'Rational({0}, {1})'.format(self.numer, self.denom)
+        def add(self, other):
+            nx, dx = self.numer, self.denom
+            ny, dy = other.numer, other.denom
+            return Rational(nx * dy + ny * dx, dx * dy)
+        def mul(self, other):
+            numer = self.numer * other.numer
+            denom = self.denom * other.denom
+            return Rational(numer, denom)
+```
 
+这实现了分数的add和mul.
 
+那么可以实现的是:
 
+```py
+>>> Rational(2, 5) + Rational(1, 10)
+Rational(1, 2)
+>>> Rational(1, 4) * Rational(2, 3)
+Rational(1, 6)
+```
 
+但是我们想让分数和复数进行加减,虽然数学上有定义,但是现在暂时还是不支持.
 
+> ​	**类型派发**。一种实现跨类型操作的方式是选择**基于函数或方法的参数类型来选择相应的行为**。类型派发的思想是写一个**能够检查它所收到的参数的类型的函数**，然后**根据参数类型执行恰当的代码**。
+>
 
+根据不同类型采取不同的行为.
 
+​	内置的函数 `isinstance` 接受一个对象或一个类。如果对象的类是所给的类或者继承自所给的类，它会返回一个真值。--->判断是否是对象的一个实例.
 
+```py
+>>> c = ComplexRI(1, 1)
+>>> isinstance(c, ComplexRI)
+True
+>>> isinstance(c, Complex)
+True
+>>> isinstance(c, ComplexMA)
+False
+```
 
+用isinstance就能针对不同的类型采取不同的行为:
 
+```py
+>>> def is_real(c):
+        """Return whether c is a real number with no imaginary part."""
+        if isinstance(c, ComplexRI):
+            return c.imag == 0
+        elif isinstance(c, ComplexMA):
+            return c.angle % pi == 0
 
+>>> is_real(ComplexRI(1, 1))
+False
+>>> is_real(ComplexMA(2, pi))
+True
+```
 
+我们还可以使用一种属性来确定是否相同:
 
+```py
+>>> def is_real(c):
+        """Return whether c is a real number with no imaginary part."""
+        if isinstance(c, ComplexRI):
+            return c.imag == 0
+        elif isinstance(c, ComplexMA):
+            return c.angle % pi == 0
+
+>>> is_real(ComplexRI(1, 1))
+False
+>>> is_real(ComplexMA(2, pi))
+True
+```
+
+那就可以写这样一个函数:
+
+```py
+>>> def add_complex_and_rational(c, r):
+        return ComplexRI(c.real + r.numer/r.denom, c.imag)
+```
+
+然后:
+
+```py
+>>> def mul_complex_and_rational(c, r):
+        r_magnitude, r_angle = r.numer/r.denom, 0
+        if r_magnitude < 0:
+            r_magnitude, r_angle = -r_magnitude, pi
+        return ComplexMA(c.magnitude * r_magnitude, c.angle + r_angle)
+```
+
+add和mul基本定义,然后交换顺序:
+
+```py
+>>> def add_rational_and_complex(r, c):
+        return add_complex_and_rational(c, r)
+>>> def mul_rational_and_complex(r, c):
+        return mul_complex_and_rational(c, r)
+```
+
+这样看起来是否很臃肿,接下来我们实现类型派发:(更改的是超类Number)
+
+```py
+>>> class Number:
+        def __add__(self, other):
+            if self.type_tag == other.type_tag:
+                return self.add(other)
+            elif (self.type_tag, other.type_tag) in self.adders:
+                return self.cross_apply(other, self.adders)
+        def __mul__(self, other):
+            if self.type_tag == other.type_tag:
+                return self.mul(other)
+            elif (self.type_tag, other.type_tag) in self.multipliers:
+                return self.cross_apply(other, self.multipliers)
+        def cross_apply(self, other, cross_fns):
+            cross_fn = cross_fns[(self.type_tag, other.type_tag)]
+            return cross_fn(self, other)
+        adders = {("com", "rat"): add_complex_and_rational,
+                    ("rat", "com"): add_rational_and_complex}
+        multipliers = {("com", "rat"): mul_complex_and_rational,
+                        ("rat", "com"): mul_rational_and_complex}
+```
+
+那么如果有新的子类,就可以在字典里面再加入一些值.
+
+那么就可以实现功能:
+
+```py
+>>> ComplexRI(1.5, 0) + Rational(3, 2)
+ComplexRI(3, 0)
+>>> Rational(-1, 2) * ComplexMA(4, pi/2)
+ComplexMA(2, 1.5 * pi)
+```
+
+那么强制类型转换其实也很简单了:
+
+```py
+>>> def rational_to_complex(r):
+        return ComplexRI(r.numer/r.denom, 0)
+```
+
+在可以转换的情况下,可以直接返回一个实部是分数值,虚部是0的一个虚数.
+
+> ​	这一节比较长,但是不难理解.
+
+### 1.2.10效率
+
+记忆化	时空复杂度的问题
+
+### 1.2.11递归对象
+
+链表,树和集合
+
+> ​	后面两篇没咋看,直接做lab,先做ants(https://insideempire.github.io/CS61A-Website-Archive/proj/ants/index.html).主要就是OOP的思想实现一个类似于植物大战僵尸的小游戏,感觉也比较有意思,我们来体验一下OOP.
+
+​	这个unlock部分就好像是在做什么任务型阅读一样.
+
+​	游戏确实还是比较有意思的,基本就是读逻辑,然后去实现,比PVZ简单很多.
+
+> ​	要注意更改list的浅拷贝遍历的问题,以及不要打破抽象屏障才是规范的.
+>
+> ​	技巧就是在浅拷贝上面遍历,在原来要修改的地方进行修改.
+
+```py
+def reduce_health(self, amount):
+        """Reduce health by AMOUNT, and remove the FireAnt from its place if it
+        has no health remaining.
+
+        Make sure to reduce the health of each bee in the current place, and apply
+        the additional damage if the fire ant dies.
+        """
+        # BEGIN Problem 5
+        "*** YOUR CODE HERE ***"
+        # 尽力不打破抽象屏障
+        damage_to_bees = amount
+        bees_with_fire = self.place.bees
+
+        Ant.reduce_health(self, amount)
+        if self.health <= 0:
+            damage_to_bees += self.damage
+        # 使用浅拷贝,注意操作的对象还是一样的,两个数组之间的对象不是独立的,所以才叫"浅"拷贝
+        for bee in bees_with_fire[:]:
+            Insect.reduce_health(bee, damage_to_bees)
+            if bee.health <= 0:
+                Insect.remove_from(bee, bee.place)
+        # END Problem 5
+```
+
+> ​	注意我们在调用方法和参数的时候,self,以及类名对应.
+>
+> ​	比如在没有更改的情况下,self.damage的值和class持有的damage的值是相同的,但是一旦发生变化,那么就各自持有各自的值.
+
+```py
+#Problem 6
+class HungryAnt(Ant):
+    name = 'Hungry'
+    implemented = True
+    damage = 0
+    food_cost = 4
+    chew_cooldown = 3
+
+    def __init__(self, health=1, cooldown=0):
+        super().__init__(health)
+        self.cooldown = cooldown
+
+    def action(self, gamestate):
+        if self.cooldown == 0:
+            unlucky_bee = random_bee(self.place.bees)
+            if unlucky_bee != None:
+                Insect.reduce_health(unlucky_bee, unlucky_bee.health)
+                self.cooldown = HungryAnt.chew_cooldown
+        else:
+            self.cooldown -= 1
+```
+
+> ​	OK,Ants结束,很好的体验了一下简单的OOP,附加就暂时不写了,时间比较紧张.
+>
 
 
 
