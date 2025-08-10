@@ -2258,6 +2258,216 @@ def make_let_frame(bindings, env):
     return env.make_child_frame(names, vals)
 ```
 
+> ​	整体实现难度不高,都在我的仓库里面.
+
+## 1.4数据处理
+
+> 程序被组织成对于顺序数据流操作的管道.
+>
+> 有效的处理和操作连续的数据流.
+>
+> 无限序列.
+
+### 1.4.1隐式序列
+
+不是把所有元素显式的存放在内存中.而是在访问某个元素的时候,才去计算它的值.
+
+```scheme
+>>> r = range(10000,1000000000)
+>>> r[45006230]
+45016230
+```
+
+
+
+显然range肯定不会存放这么多数字,而是调用的时候直接加上一个值得到value.
+
+那么这就是惰性计算(**Lazy Computation**),这是本篇的重点.
+
+#### 1.4.1.1iterator
+
+```py
+>>> primes = [2, 3, 5, 7]
+>>> type(primes)
+<class 'list'>
+>>> iterator = iter(primes)
+>>> type(iterator)
+<class 'list-iterator'>
+>>> next(iterator)
+2
+>>> next(iterator)
+3
+>>> next(iterator)
+5
+```
+
+获取迭代器,和基本的遍历操作.
+
+没有更多,引发StopIteration异常:
+
+```py
+>>> next(iterator)
+7
+>>> next(iterator)
+Traceback (most recent call las):
+  File "<stdin>", line 1, in <module>
+StopIteration
+
+>>> try:
+        next(iterator)
+    except StopIteration:
+        print('No more values')
+No more values
+```
+
+两个迭代器是独立的:
+
+```py
+>>> r = range(3, 13)
+>>> s = iter(r)  # r 的第一个迭代器
+>>> next(s)
+3
+>>> next(s)
+4
+>>> t = iter(r)  # r 的第二个迭代器
+>>> next(t)
+3
+>>> next(t)
+4
+>>> u = t        # u 绑定到 r 的第二个迭代器
+>>> next(u)
+5
+>>> next(u)
+6
+```
+
+#### 1.4.1.2可迭代性
+
+
+
+可迭代对象:序列 + 容器
+
+```py
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> d
+{'one': 1, 'three': 3, 'two': 2}
+>>> k = iter(d)
+>>> next(k)
+'one'
+>>> next(k)
+'three'
+>>> v = iter(d.values())
+>>> next(v)
+1
+>>> next(v)
+3
+```
+
+py3.6+--->字典是有序的,按照插入的顺序
+
+#### 1.4.1.3内置迭代器
+
+```py
+>>> def double_and_print(x):
+        print('***', x, '=>', 2*x, '***')
+        return 2*x
+>>> s = range(3, 7)
+>>> doubled = map(double_and_print, s)  # double_and_print 未被调用
+>>> next(doubled)                       # double_and_print 调用一次
+*** 3 => 6 ***
+6
+>>> next(doubled)                       # double_and_print 再次调用
+*** 4 => 8 ***
+8
+>>> list(doubled)                       # double_and_print 再次调用兩次
+*** 5 => 10 ***                         # list() 会把剩余的值都计算出来并生成一个列表
+*** 6 => 12 ***
+[10, 12]
+```
+
+例如map函数,只有iterator被next调用的时候,才会产生计算.
+
+#### 1.4.1.4For语句
+
+for是对于迭代对象进行操作.
+
+```py
+>>> items = counts.__iter__()
+>>> try:
+        while True:
+             item = items.__next__()
+             print(item)
+    except StopIteration:
+        pass
+1
+2
+3
+```
+
+#### 1.4.1.5生成器和yield语句
+
+比如:
+
+```py
+>>> def letters_generator():
+        current = 'a'
+        while current <= 'd':
+            yield current
+            current = chr(ord(current) + 1)
+
+>>> for letter in letters_generator():
+        print(letter)
+a
+b
+c
+d
+```
+
+每次调用next的时候,每次执行到一个yield语句就直接返回.
+
+我们可以手动调用\__next__来遍历这个生成器:
+
+```py
+>>> letters = letters_generator()
+>>> type(letters)
+<class 'generator'>
+>>> letters.__next__()
+'a'
+>>> letters.__next__()
+'b'
+>>> letters.__next__()
+'c'
+>>> letters.__next__()
+'d'
+>>> letters.__next__()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+```
+
+> ​	结语,第四章的内容整体比较抽象,都是一些概览性的intro的内容,比如数据库,并行计算,多线程,开发,网络等,是很好的科普内容.
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
