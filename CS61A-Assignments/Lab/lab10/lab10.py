@@ -13,21 +13,23 @@ def calc_eval(exp):
     >>> calc_eval(Pair("+", Pair(1, Pair(2, nil))))
     3
     """
+    # 这是进行语法分析
     if isinstance(exp, Pair):
-        operator = ____________ # UPDATE THIS FOR Q2, e.g (+ 1 2), + is the operator
-        operands = ____________ # UPDATE THIS FOR Q2, e.g (+ 1 2), 1 and 2 are operands
+        operator =  exp.first# UPDATE THIS FOR Q2, e.g (+ 1 2), + is the operator
+        operands = exp.rest # UPDATE THIS FOR Q2, e.g (+ 1 2), 1 and 2 are operands
         if operator == 'and': # and expressions
             return eval_and(operands)
         elif operator == 'define': # define expressions
             return eval_define(operands)
         else: # Call expressions
-            return calc_apply(___________, ___________) # UPDATE THIS FOR Q2, what is type(operator)?
+            return calc_apply(calc_eval(operator), operands.map(calc_eval)) # UPDATE THIS FOR Q2, what is type(operator)?
     elif exp in OPERATORS:   # Looking up procedures
         return OPERATORS[exp]
     elif isinstance(exp, int) or isinstance(exp, bool):   # Numbers and booleans
         return exp
-    elif _________________: # CHANGE THIS CONDITION FOR Q4 where are variables stored?
-        return _________________ # UPDATE THIS FOR Q4, how do you access a variable?
+        # 用bindings实现变量的定义的问题
+    elif exp in bindings: # CHANGE THIS CONDITION FOR Q4 where are variables stored?
+        return bindings[exp] # UPDATE THIS FOR Q4, how do you access a variable?
 
 def calc_apply(op, args):
     return op(args)
@@ -52,6 +54,15 @@ def floor_div(args):
     20
     """
     "*** YOUR CODE HERE ***"
+    # 实现除法的逻辑,apply把'//'绑定到我们的这个方法上面去
+    # 类似与链表,用循环处理
+    curr = args
+    res = curr.first
+    while curr.rest != nil:
+        res //= curr.rest.first
+        curr = curr.rest
+    return res
+
 
 scheme_t = True   # Scheme's #t
 scheme_f = False  # Scheme's #f
@@ -74,6 +85,20 @@ def eval_and(expressions):
     True
     """
     "*** YOUR CODE HERE ***"
+    # 实现一个and表达式,注意所有表达式为True,返回最后一个表达式的值
+    if expressions is nil:
+        return scheme_t
+    
+    curr = expressions
+    while curr.rest is not nil:
+        value = calc_eval(curr.first)
+        if value is scheme_f:
+            return scheme_f
+        curr = curr.rest
+        # 理解pair是怎么工作的
+    return calc_eval(curr.first)
+        
+    
 
 bindings = {}
 
@@ -93,6 +118,15 @@ def eval_define(expressions):
     2
     """
     "*** YOUR CODE HERE ***"
+    # 直接进行符号绑定,要先进行求值的操作
+    # 注意要绑定的是一个值表达式,所以是exp.rest.first!!!
+    variable = expressions.first
+    value_exp = expressions.rest.first
+    value = calc_eval(value_exp)
+    bindings[variable] = value
+    return variable
+
+
 
 OPERATORS = { "//": floor_div, "+": addition, "-": subtraction, "*": multiplication, "/": division }
 

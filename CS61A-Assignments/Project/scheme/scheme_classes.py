@@ -9,12 +9,16 @@ class SchemeError(Exception):
 # Environments #
 ################
 
+# 代表了一个环境帧 
+
 class Frame:
     """An environment frame binds Scheme symbols to Scheme values."""
 
     def __init__(self, parent):
         """An empty frame with parent frame PARENT (which may be None)."""
+        # bindings字典,把一个scheme的symbo(py中是string表示)和value绑定起来
         self.bindings = {}
+        # 父帧,全局帧的父帧是None
         self.parent = parent
 
     def __repr__(self):
@@ -23,20 +27,29 @@ class Frame:
         s = sorted(['{0}: {1}'.format(k, v) for k, v in self.bindings.items()])
         return '<{{{0}}} -> {1}>'.format(', '.join(s), repr(self.parent))
 
+    # bindings进行绑定,在我这个帧中
     def define(self, symbol, value):
         """Define Scheme SYMBOL to have VALUE."""
         # BEGIN PROBLEM 1
-        "*** YOUR CODE HERE ***"
+        self.bindings[symbol] = value
         # END PROBLEM 1
 
+    # 从我当前的这个frame开始往parent的frame进行查找,找到并且返回这个value
     def lookup(self, symbol):
         """Return the value bound to SYMBOL. Errors if SYMBOL is not found."""
         # BEGIN PROBLEM 1
-        "*** YOUR CODE HERE ***"
+        curr = self
+        while curr != None:
+            for key, value in curr.bindings.items():
+                if key == symbol:
+                    return curr.bindings[key]
+            curr = curr.parent
         # END PROBLEM 1
         raise SchemeError('unknown identifier: {0}'.format(symbol))
 
 
+    # 创建一个子帧
+    # 当调用一个用户定义的procedure的时候,创建一个frame
     def make_child_frame(self, formals, vals):
         """Return a new local frame whose parent is SELF, in which the symbols
         in a Scheme list of formal parameters FORMALS are bound to the Scheme
@@ -51,7 +64,15 @@ class Frame:
         if len(formals) != len(vals):
             raise SchemeError('Incorrect number of arguments to function call')
         # BEGIN PROBLEM 8
-        "*** YOUR CODE HERE ***"
+        # 把创建的value和名称进行一一绑定即可
+        child_frame = Frame(self)
+        symbol = formals
+        value = vals
+        while symbol != nil:
+            child_frame.define(symbol.first, value.first)
+            symbol = symbol.rest
+            value = value.rest
+        return child_frame
         # END PROBLEM 8
 
 ##############
@@ -72,6 +93,7 @@ class BuiltinProcedure(Procedure):
     def __str__(self):
         return '#[{0}]'.format(self.name)
 
+# 用户自己定义的过程
 class LambdaProcedure(Procedure):
     """A procedure defined by a lambda expression or a define form."""
 
@@ -119,3 +141,17 @@ class MuProcedure(Procedure):
     def __repr__(self):
         return 'MuProcedure({0}, {1})'.format(
             repr(self.formals), repr(self.body))
+
+class EnumerateProcedure(Procedure):
+    """
+    Returns the enumaration of a list...
+    """
+    def __init__(self):
+        super().__init__()
+    
+    def __str__(self):
+        return '#[enumerate]'
+    
+    def __repr__(self):
+        return 'EnumerateProcedure()'
+    

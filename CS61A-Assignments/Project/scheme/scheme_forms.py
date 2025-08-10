@@ -36,12 +36,26 @@ def do_define_form(expressions, env):
         # assigning a name to a value e.g. (define x (+ 1 2))
         validate_form(expressions, 2, 2) # Checks that expressions is a list of length exactly 2
         # BEGIN PROBLEM 4
-        "*** YOUR CODE HERE ***"
+        # 把一个expr的value绑定到一个symbol上面去
+        # 注意这里define获取的是表达式本身而不是Pair对象,自动识别过程的机制决定了first可以代表这个整个表达式
+        value = scheme_eval(expressions.rest.first, env)
+        env.define(str(expressions.first), value)
+        return str(expressions.first)
         # END PROBLEM 4
     elif isinstance(signature, Pair) and scheme_symbolp(signature.first):
         # defining a named procedure e.g. (define (f x y) (+ x y))
+        # 上面是绑定值,我们现在要绑定一个表达式
         # BEGIN PROBLEM 10
-        "*** YOUR CODE HERE ***"
+        # 直接和一个lambda表达式绑定在一起, 关键是搞清楚参数怎么构建
+        symbol = expressions.first.first
+        formals = expressions.first.rest
+        # 注意还要检查格式是否合法
+        validate_formals(formals)
+        body = expressions.rest
+
+        lambda_procedure = LambdaProcedure(formals, body, env)
+        env.define(str(symbol), lambda_procedure)
+        return str(symbol)
         # END PROBLEM 10
     else:
         bad_signature = signature.first if isinstance(signature, Pair) else signature
@@ -56,7 +70,8 @@ def do_quote_form(expressions, env):
     """
     validate_form(expressions, 1, 1)
     # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
+    # 实现quote引用,直接返回第一个即可,因为我们知道前面用的就是关键字quote
+    return expressions.first
     # END PROBLEM 5
 
 def do_begin_form(expressions, env):
@@ -82,7 +97,9 @@ def do_lambda_form(expressions, env):
     formals = expressions.first
     validate_formals(formals)
     # BEGIN PROBLEM 7
-    "*** YOUR CODE HERE ***"
+    # 创建并且返回一个lambda过程
+    lambda_procedure = LambdaProcedure(formals, expressions.rest, env)
+    return lambda_procedure
     # END PROBLEM 7
 
 def do_if_form(expressions, env):
@@ -94,6 +111,7 @@ def do_if_form(expressions, env):
     >>> do_if_form(read_line("(#f (print 2) (print 3))"), env) # evaluating (if #f (print 2) (print 3))
     3
     """
+    # 理解
     validate_form(expressions, 2, 3)
     if is_scheme_true(scheme_eval(expressions.first, env)):
         return scheme_eval(expressions.rest.first, env)
@@ -115,7 +133,14 @@ def do_and_form(expressions, env):
     False
     """
     # BEGIN PROBLEM 12
-    "*** YOUR CODE HERE ***"
+    curr = expressions
+    if curr == nil:
+        return True
+    while curr.rest != nil:
+        if is_scheme_false(scheme_eval(curr.first, env)):
+            return False
+        curr = curr.rest
+    return scheme_eval(curr.first, env)
     # END PROBLEM 12
 
 def do_or_form(expressions, env):
@@ -133,7 +158,15 @@ def do_or_form(expressions, env):
     6
     """
     # BEGIN PROBLEM 12
-    "*** YOUR CODE HERE ***"
+    curr = expressions
+    if curr == nil:
+        return False
+    # 注意这里要检查到最后一个
+    while curr != nil:
+        if is_scheme_true(scheme_eval(curr.first, env)):
+            return scheme_eval(curr.first, env)
+        curr = curr.rest
+    return False
     # END PROBLEM 12
 
 def do_cond_form(expressions, env):
@@ -153,7 +186,11 @@ def do_cond_form(expressions, env):
             test = scheme_eval(clause.first, env)
         if is_scheme_true(test):
             # BEGIN PROBLEM 13
-            "*** YOUR CODE HERE ***"
+            # 这个过程也比较好理解
+            if clause.rest == nil:
+                return test
+            else:
+                return eval_all(clause.rest, env)
             # END PROBLEM 13
         expressions = expressions.rest
 
@@ -161,9 +198,10 @@ def do_let_form(expressions, env):
     """Evaluate a let form.
 
     >>> env = create_global_frame()
-    >>> do_let_form(read_line("(((x 2) (y 3)) (+ x y))"), env)
+    >>> do_let_form(read_line("(((x 2) (y 3)) (+ x y) "), env)
     5
     """
+    # let 把一个expression的值和一个symbol进行绑定
     validate_form(expressions, 2)
     let_env = make_let_frame(expressions.first, env)
     return eval_all(expressions.rest, let_env)
@@ -177,7 +215,25 @@ def make_let_frame(bindings, env):
         raise SchemeError('bad bindings list in let form')
     names = vals = nil
     # BEGIN PROBLEM 14
-    "*** YOUR CODE HERE ***"
+    # 传进来的bindings应该是一个pair对象
+    # 我还要倒着构造两个pair串
+    curr = bindings
+    while curr != nil:
+        validate_form(curr.first, 2, 2)
+        binding = curr.first
+        names = Pair(binding.first, names)
+        vals = Pair(binding.rest.first, vals)
+        curr = curr.rest
+    validate_formals(names)
+
+    # 然后还要对于vals表达式进行求值
+    vals = nil
+    curr = bindings
+    while curr != nil:
+        val = scheme_eval(curr.first.rest.first, env)
+        vals = Pair(val, vals)
+        curr = curr.rest
+
     # END PROBLEM 14
     return env.make_child_frame(names, vals)
 
@@ -213,13 +269,16 @@ def do_unquote(expressions, env):
 # Dynamic Scope #
 #################
 
+# 实现动态的作用域
 def do_mu_form(expressions, env):
     """Evaluate a mu form."""
     validate_form(expressions, 2)
     formals = expressions.first
     validate_formals(formals)
     # BEGIN PROBLEM 11
-    "*** YOUR CODE HERE ***"
+    body = expressions.rest
+    mu_procedure = MuProcedure(formals, body)
+    return mu_procedure
     # END PROBLEM 11
 
 

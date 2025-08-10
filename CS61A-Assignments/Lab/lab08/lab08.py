@@ -12,8 +12,15 @@ def cumulative_mul(t):
     Tree(5040, [Tree(60, [Tree(3), Tree(4), Tree(5)]), Tree(42, [Tree(7)])])
     """
     "*** YOUR CODE HERE ***"
-
-
+    # 所有子数节点的乘积作为本节点的乘积
+    # 
+    if t.is_leaf():
+        return t.label
+    
+    for node in t.branches:
+        cumulative_mul(node)
+        t.label *= node.label
+    
 def prune_small(t, n):
     """Prune the tree mutatively, keeping only the n branches
     of each node with the smallest labels.
@@ -31,11 +38,13 @@ def prune_small(t, n):
     >>> t3
     Tree(6, [Tree(1), Tree(3, [Tree(1), Tree(2)])])
     """
-    while ____:
-        largest = max(____, key=____)
+    # prune:修建    mutatively:术语,不创建副本,而是直接在原来的树上面进行修改
+    # 注意这里的max的用法
+    while len(t.branches) > n:
+        largest = max(t.branches, key=lambda x:x.label)
         t.branches.remove(largest)
     for b in t.branches:
-        ____
+        prune_small(b, n)
 
 
 def delete(t, x):
@@ -57,14 +66,18 @@ def delete(t, x):
     >>> t
     Tree(1, [Tree(4), Tree(5), Tree(3, [Tree(6)]), Tree(6), Tree(7), Tree(8), Tree(4)])
     """
+    # 这里要注意的就是append和extend的区别
+    # 很简单,append是直接加上一个元素,显然会出问题
+    # extend,把数组展开并且逐个进行添加
     new_branches = []
-    for _________ in ________________:
-        _______________________
+    for b in t.branches:
+        delete(b, x)
         if b.label == x:
-            __________________________________
+            new_branches.extend(b.branches)
         else:
-            __________________________________
-    t.branches = ___________________
+            new_branches.append(b)
+    t.branches = new_branches
+  
 
 
 def max_path_sum(t):
@@ -75,7 +88,14 @@ def max_path_sum(t):
     11
     """
     "*** YOUR CODE HERE ***"
-
+    if t.is_leaf():
+        return t.label
+    
+    max_value = -1
+    for node in t.branches:
+        max_value = max(max_value, max_path_sum(node))
+    max_value += t.label
+    return max_value
 
 class Tree:
     """A tree has a label and a list of branches.

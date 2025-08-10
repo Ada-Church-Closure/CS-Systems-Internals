@@ -1571,6 +1571,106 @@ class HungryAnt(Ant):
 > ​	OK,Ants结束,很好的体验了一下简单的OOP,附加就暂时不写了,时间比较紧张.
 >
 
+之后做lab08,hw05已经做过了,我们就结束了第二章.
+
+简单力扣水平吧.
+
+
+
+## 1.3计算机程序的解释
+
+### 1.3.1引言
+
+解释器	设计语言而不是仅仅是使用者,这是程序员的视角
+
+> 用py写一个解释Scheme语言的解释器.
+
+
+
+​	我们研究怎样设计一个解释器,核心是两个互递归函数,第一个求解环境中的表达式,第二个把函数应用于参数
+
+Lab10:
+
+REPL---读取,求值,打印循环
+
+1.读取:
+
+词法分析:把输入的字符串分解为token
+
+语法分析:把这些token组织成数据结构,用来处理---pair
+
+2.求值:
+
+eval:评估表达式,当是调用函数的时候,用apply获取结果.
+
+apply:评估之后的运算符用于参数,还会调用eval.
+
+这是类似于那种前缀表达式之类的计算
+
+> ​	这相当于是一个小的预习.整体的感觉就像下面一样,eval进行语法分析,并且调用具体的计算,apply根据不同的operand确定不同的计算方法,其中的部分还是会使用调用eval.
+
+```py
+def calc_eval(exp):
+    # 这是进行语法分析
+    if isinstance(exp, Pair):
+        operator =  exp.first# UPDATE THIS FOR Q2, e.g (+ 1 2), + is the operator
+        operands = exp.rest # UPDATE THIS FOR Q2, e.g (+ 1 2), 1 and 2 are operands
+        if operator == 'and': # and expressions
+            return eval_and(operands)
+        elif operator == 'define': # define expressions
+            return eval_define(operands)
+        else: # Call expressions
+            return calc_apply(calc_eval(operator), operands.map(calc_eval)) # UPDATE THIS FOR Q2, what is type(operator)?
+    elif exp in OPERATORS:   # Looking up procedures
+        return OPERATORS[exp]
+    elif isinstance(exp, int) or isinstance(exp, bool):   # Numbers and booleans
+        return exp
+        # 用bindings实现变量的定义的问题
+    elif exp in bindings: # CHANGE THIS CONDITION FOR Q4 where are variables stored?
+        return bindings[exp] # UPDATE THIS FOR Q4, how do you access a variable?
+
+def calc_apply(op, args):
+    return op(args)
+
+def floor_div(args):
+    # 实现除法的逻辑,apply把'//'绑定到我们的这个方法上面去
+    # 类似与链表,用循环处理
+    curr = args
+    res = curr.first
+    while curr.rest != nil:
+        res //= curr.rest.first
+        curr = curr.rest
+    return res
+
+
+scheme_t = True   # Scheme's #t
+scheme_f = False  # Scheme's #f
+
+def eval_and(expressions):
+    # 实现一个and表达式,注意所有表达式为True,返回最后一个表达式的值
+    if expressions is nil:
+        return scheme_t
+    
+    curr = expressions
+    while curr.rest is not nil:
+        value = calc_eval(curr.first)
+        if value is scheme_f:
+            return scheme_f
+        curr = curr.rest
+        # 理解pair是怎么工作的
+    return calc_eval(curr.first)
+        
+bindings = {}
+
+def eval_define(expressions):
+    # 直接进行符号绑定,要先进行求值的操作
+    # 注意要绑定的是一个值表达式,所以是exp.rest.first!!!
+    variable = expressions.first
+    value_exp = expressions.rest.first
+    value = calc_eval(value_exp)
+    bindings[variable] = value
+    return variable
+```
 
 
 
@@ -1578,12 +1678,585 @@ class HungryAnt(Ant):
 
 
 
+### 1.3.2函数式编程
+
+​	Scheme 是 [Lisp](http://en.wikipedia.org/wiki/Lisp_(programming_language)) 的一个变种，而 Lisp 是继 [Fortran](http://en.wikipedia.org/wiki/Fortran) 之后仍然广受欢迎的第二古老的编程语言。Lisp 程序员社区几十年来持续蓬勃发展，[Clojure](http://en.wikipedia.org/wiki/Clojure) 等 Lisp 的新方言拥有现代编程语言中增长最快的开发人员社区。如果你想亲手试试本文中的例子，可以下载一个 [Scheme 的解释器](http://inst.eecs.berkeley.edu/~scheme/) 来操作。
+
+#### 1.3.2.1表达式
+
+前缀表达式:
+
+```scheme
+(+ (* 3 5) (- 10 6))
+```
+
+可以写在多行上面:
+
+```scheme
+(+ (* 3
+      (+ (* 2 4)
+         (+ 3 5)))
+   (+ (- 10 7)
+      6))
+```
+
+if表达式:
+
+```scheme
+(if <predicate> <consequent> <alternative>)
+```
+
+比较方法:
+
+```py
+(>= 2 1)
+```
+
+- `(and <e1> ... <en>)` 解释器会从左到右依次检查 `<e>` 表达式。一旦有一个 `<e>` 的结果是假，整个 `and` 表达式就直接返回假，并且剩下的 `<e>` 表达式不再检查。只有当所有 `<e>` 都是真时，`and` 表达式的返回值才是最后一个表达式的结果。
+- `(or <e1> ... <en>)` 解释器会从左到右依次检查 `<e>` 表达式。一旦有一个 `<e>` 的结果是真，`or` 表达式就直接返回那个真值，并且剩下的 `<e>` 表达式不再检查。只有当所有 `<e>` 都是假时，`or` 表达式才返回假。
+- `(not <e>)` 当 `<e>` 表达式的结果是假时，`not` 表达式就返回真，否则返回假。
+
+#### 1.3.2.2定义
+
+define可以定义一个新的变量.
+
+类似于:
+
+```scheme
+(define (<name> <formal parameters>) <body>)
+
+(define (square x) (* x x))
+
+(square 21)
+
+(square (+ 2 5))
+
+(square (square 3))
+```
+
+嵌套定义 递归 局部定义:
+
+```py
+(define (sqrt x)
+  (define (good-enough? guess)
+    (< (abs (- (square guess) x)) 0.001))
+  (define (improve guess)
+    (average guess (/ x guess)))
+  (define (sqrt-iter guess)
+    (if (good-enough? guess)
+        guess
+        (sqrt-iter (improve guess))))
+  (sqrt-iter 1.0))
+(sqrt 9)
+```
+
+创建lambda表达式:(只是不用设置函数名)
+
+```scheme
+((lambda (x y z) (+ x y (square z))) 1 2 3)
+```
+
+#### 1.3.2.3复合类型
+
+pair内置数据结构.
+
+你可以这样访问,注意表示的方式.
+
+```scheme
+(define x (cons 1 2))
+x
+(1 . 2)
+(car x)
+1
+(cdr x)
+2
+```
+
+#### 1.3.2.4符号数据
+
+引用符号a b而不是他们的值,怎么上符号.
+
+```scheme
+scm> (define a 1)
+a
+scm> (define b 2)
+b
+scm> (list a b)
+(1 2)
+scm> (list 'a b)
+(a 2)
+scm> (list 'a 'b)
+(a b)
+```
+
+任何不被求值的表达式都是引用.
+
+### 1.3.3异常 Exceptions
+
+异常是一个对象实例,继承自某个BaseException类,常见用法就是构造实例然后抛出.
+
+```py
+>>> raise Exception(' An error occurred')
+Traceback (most recent call last):
+	File "<stdin>", line 1, in <module>
+Exception: an error occurred
+```
+
+"\<stdin>"表示这个异常是在交互会话中触发的,而并非来自于某个文件.
+
+handling exceptions:
+
+用try来处理:
+
+```py
+try:
+	<try suite>
+except <exception class> as <name>:
+	<except suite>
+```
+
+​	在执行 try 语句时，`<try suite>` 总是立即执行。只有在执行 `<try suite>` 过程中发生异常时，except 子句的内容才会执行。每个 except 子句指定了要处理的特定异常类。例如，如果 `<exception class>` 是 `AssertionError`，那么在执行 `<try suite>` 过程中引发的任何继承自 `AssertionError` 类的实例都将由随后的 `<except suite>` 处理。在 `<except suite>` 内部，标识符 `<name>` 绑定到被引发的异常对象，但此绑定不会在 `<except suite>` 之外存在。
+
+比如:当出现某种异常的时候,我们会有对应的处理方法.
+
+```py
+>>> try:
+		x = 1 / 0:
+	except ZeroDivisionError as e:
+		print('handling a', type(e))
+		x = 0
+handling a <class 'ZeroDivisionError'>
+>>> x
+0
+```
+
+异常对象.
+
+自定义继承于Exception即可,可以具有属性.
+
+> ​	简单来讲,异常处理使得程序更有健壮性.
+
+### 1.3.4组合语言的解释器
+
+解释器就是一种函数.
+
+#### 1.3.4.1基于Scheme语法的计算器
+
+基本运算:
+
+```scheme
+scm> (*)
+1
+scm> (+ 1 2 3 4)
+10
+scm> (* 1 1 4 5 1 4)
+80
+```
+
+​	减法（）具有两种行为。只传入一个参数时，它会对该值取相反数。传入至少两个参数时，它会用第一个参数减去之后的所有参数。除法（）也有类似的两种行为：计算单个参数的倒数，或用第一个参数除以之后的所有参数.
+
+先对于子表达式求值,再得到最后的结果:
+
+```scheme
+scm> (- 100 (* 7 (+ 8 (/ -12 -3))))
+16.0
+```
+
+#### 1.3.4.2表达式树
+
+​	Scheme对,列表一定是嵌套对.
+
+​	实现的时候,所有的计算器语言表达式都是py的Pair列表,我们读入嵌套的列表并且转换为pair实例的表达式树.
+
+```py
+>>> expr = Pair('+', Pair(Pair('*', Pair(3, Pair(4, nil))), Pair(5, nil)))
+>>> print(expr)
+(+ (* 3 4) 5)
+>>> print(expr.second.first)
+(* 3 4)
+>>> expr.second.first.second.first
+3
+```
+
+#### 1.3.4.3解析表达式
 
 
 
+原始文本--->表达式树 的过程.
+
+解析器:
+
+1.词法分析器 lexical analyzer
+
+​	输入字符串--->划分成token
+
+2.语法分析器 syntactic analyzer
+
+​	根据生成的token生成表达式树 token序列会被语法分析器消耗
+
+##### 1.3.4.3.1词法分析
+
+tokenizer
+
+对于格式良好的表达式进行分词的操作:
+
+```py
+>>> tokenize_line('(+ 1 (* 2.3 45))')
+['(', '+', 1, '(', '*', 2.3, 45, ')', ')']
+```
+
+可以单独作用于每一行
+
+##### 1.3.4.3.2语法分析
+
+树递归.
+
+```scheme
+>>> lines = ['(+ 1', '   (* 2.3 45))']
+>>> expression = scheme_read(Buffer(tokenize_lines(lines)))
+>>> expression
+Pair('+', Pair(1, Pair(Pair('*', Pair(2.3, Pair(45, nil))), nil)))
+>>> print(expression)
+(+ 1 (* 2.3 45))
+```
+
+​	信息丰富的语法错误的反馈,可以极大地提高解释器的可用性(也就是异常)。由此引发的 `SyntaxError` 异常包含对所遇问题的描述。
+
+> ​	总之就是读取token,然后生成Pair.
+
+#### 1.3.4.4计算器语言求值
+
+求值器,表达式作为一个参数并且返回一个值.
+
+### 1.3.5抽象语言的解释器
+
+> ​	我们的大部分lab都将在这一章结束.
+>
+> ​	HW 07、HW 08、HW 09、Lab 10&Lab11、Scheme、Scheme Challenge、Scheme Contest.
+>
+> ​	加油!
+
+怎么定义新的运算符以及为我们的值进行命名.
+
+#### 1.3.5.1结构
+
+1.正确解析点列表和引号
+
+```py
+>>> read_line("(car '(1 . 2))")
+Pair('car', Pair(Pair('quote', Pair(Pair(1, 2), nil)), nil))
+```
+
+2.求值---一种简化的形式
+
+```py
+>>> def scheme_eval(expr, env):
+        """Evaluate Scheme expression expr in environment env."""
+        if scheme_symbolp(expr):
+            return env[expr]
+        elif scheme_atomp(expr):
+            return expr
+        first, rest = expr.first, expr.second
+        if first == "lambda":
+            return do_lambda_form(rest, env)
+        elif first == "define":
+            do_define_form(rest, env)
+            return None
+        else:
+            procedure = scheme_eval(first, env)
+            args = rest.map(lambda operand: scheme_eval(operand, env))
+            return scheme_apply(procedure, args, env)
+```
+
+基本流程还是lab10中我们写过的.
+
+#### 1.3.5.2环境ENV
+
+​	类似于py,现在我们已经描述了 Scheme 解释器的结构，接下来我们来实现构成环境的 `Frame` 类。每个 `Frame` 实例代表一个环境，在这个环境中，符号与值绑定。一个帧有一个保存绑定（`bindings`）的字典，以及一个父（`parent`）帧。对于全局帧而言，父帧为 `None`。这就是环境的实现方法.
+
+​	绑定不能直接访问，而是通过两种 `Frame` 方法：`lookup` 和 `define`。第一个方法实现了第一章中描述的计算环境模型的查找流程。符号与当前帧的绑定相匹配。如果找到它，则返回它绑定到的值。如果没有找到，则继续在父帧中查找。另一方面，`define` 方法用来将符号绑定到当前帧中的值。
+
+lookup逐渐向上进行查找,define用来和frame进行绑定.
+
+```scheme
+(define (factorial n)
+  (if (= n 0) 1 (* n (factorial (- n 1)))))
+
+(factorial 5)
+120
+```
+
+do_define_form来进行求值的操作.
+
+来分析上面的两个输入.
+
+第一个输入表达式是一个 `define` 形式，将由 Python 函数 `do_define_form` 求值。定义一个函数有如下步骤：
+
+1. 检查表达式的格式，确保它是一个格式良好的 Scheme 列表，在关键字 `define` 后面至少有两个元素。
+2. 分析第一个元素（这里是一个 `Pair`），找出函数名称 `factorial` 和形式参数表 `(n)`。
+3. 使用提供的形式参数、函数主体和父环境创建 `LambdaProcedure`。
+4. 在当前环境的第一帧中，将 `factorial` 符号与此函数绑定。在示例中，环境只包括全局帧。
+
+第二个输入是调用表达式。传递给 `scheme_apply` 的 `procedure` 是刚刚创建并绑定到符号 `factorial` 的 `LambdaProcedure`。传入的 `args` 是一个单元素 Scheme 列表 `(5)`。为了应用该函数，我们将创建一个新帧来扩展全局帧（`factorial` 函数的父环境）。在这帧中，符号 `n` 被绑定为数值 5。然后，我们将在该环境中对 `factorial` 函数主体进行求值，并返回其值。
+
+> ​	这里有点复杂,还是具体做的时候再看.
+
+#### 1.3.5.3数据即程序
+
+程序是对于抽象机器的描述.
+
+用户的程序就是解释器的数据.
+
+在执行过程中对于构建的表达式进行求值.
+
+#### schemeLab简单记录
+
+##### 熟悉scheme
+
+> ​	逆天超级小括号语言.
+
+scheme其实是一种诞生于这门课程的著名的教学语言.
+
+会写简单的scheme代码,主要是理解前缀表达式.
+
+比如实现幂函数:
+
+```scheme
+(define (pow base exp) 
+  (if (or (= base 1) (= exp 0)) 
+    1
+    (* base (pow base (- exp 1))))
+)
+```
+
+let语句进行局部变量的绑定:
+
+```scheme
+(define (repeatedly-cube n x)
+  (if (zero? n)
+      x
+      (let ((y (* x x x)))
+        (repeatedly-cube (- n 1) y))))
+```
+
+**car**:获取list的第一个元素.
+
+**cdr**:获取list中除第一个元素的剩余部分.
+
+```scheme
+(define (cadr s) 
+  (car (cdr s))
+)
+
+(define (caddr s) 
+  (car (cdr (cdr s)))
+)
+```
+
+那么这样的简单实现就是返回list中的第几个元素.
+
+怎么使用条件?
+
+```scheme
+(define (ascending? s) 
+    (or (null? s)
+        (null? (cdr s))
+        (and (<= (car s) (car (cdr s))) (ascending? (cdr s)))
+    )
+)
+```
 
 
 
+返回满足条件的list中的元素,list的本质还是pair对:
+
+cond就是类似于switch语句,最后的else就是default.
+
+cons就是给定两个参数,构造一个pair的数据对象.
+
+```scheme
+(define (my-filter pred s) 
+    (cond ((null? s) '())
+            ((pred (car s)) (cons (car s) (my-filter pred (cdr s))))
+            (else (my-filter pred (cdr s)))
+    )
+)
+```
+
+交替取两个数组的元素:
+
+```scheme
+(define (interleave lst1 lst2) 
+   (cond    ((null? lst1)  lst2)
+            ((null? lst2)  lst1)
+            (else (cons (car lst1)
+                        (cons (car lst2) (interleave (cdr lst1) (cdr lst2)))))))
+```
+
+怎么用lambda函数:
+
+```scheme
+(define (no-repeats s) 
+    (if (null? s)
+        '()
+        (cons (car s) 
+            (no-repeats 
+                (filter (lambda (x) (not (= x (car s)))) 
+                        (cdr s))))))
+```
+
+`做代码构造,有点模板的味道,还有  ,  表示先不要引用,先进行动态的求值.
+
+代码生成,动态构造lambda表达式.
+
+```scheme
+(define (curry-cook formals body) 
+  (if (null? (cdr formals))
+    `(lambda (,(car formals)) ,body)
+    `(lambda (,(car formals)) ,(curry-cook (cdr formals) body))))
+```
+
+curry展开的操作:
+
+```scheme
+(define (curry-consume curry args)
+  (if (null? args)
+      curry
+      (let ((result (curry (car args))))
+      (curry-consume result (cdr args)))))
+```
+
+这几行代码真是抽象过头了:
+
+把switch语句转换成cond语句,`做代码生成,map把lambda应用于list上面去.
+
+```scheme
+(define (switch-to-cond switch-expr)
+  (cons `cond
+        (map (lambda (option)
+               (cons (list `equal? (car (cdr switch-expr))(car option))  (cdr option)))
+             (car (cdr (cdr switch-expr))) ) ))
+
+```
+
+比如实现欧几里得算法:
+
+```scheme
+(define (gcd a b)
+  (if (= b 0)
+      a
+      (gcd b (modulo a b))))
+```
+
+插入:
+
+```scheme
+(define (pow-expr base exp) 
+  (cond ((= exp 0) 1)
+        ((= exp 1) `(* ,base 1))
+        ((even? exp) `(square ,(pow-expr base (/ exp 2))))
+        (else `(* ,base ,(pow-expr base (- exp 1))))))
+```
+
+宏函数和begin的用法:
+
+宏定义.begin--->按照顺序执行一系列的子句(...)(...)
+
+```scheme
+(define-macro (repeat n expr)
+  `(repeated-call ,n (lambda() ,expr)))
+
+; Call zero-argument procedure f n times and return the final result.
+(define (repeated-call n f)
+  (if (= n 1)
+      (f)
+      (begin (f) (repeated-call (- n 1) f))))
+```
+
+##### 解释器的实现
+
+我们要更改四个文件:
+
+- `scheme_eval_apply.py`
+- `scheme_forms.py`
+- `scheme_classes.py`
+- `questions.scm`
+
+###### PARTI:Evaluator
+
+求值器的作用.
+
+符号定义和查找.
+
+表达式求值.
+
+调用已经实现的方法.
+
+
+
+环境,frame的问题,比如lookup的实现:
+
+我们遍历字典的键值对.
+
+```py
+# 从我当前的这个frame开始往parent的frame进行查找,找到并且返回这个value
+    def lookup(self, symbol):
+        """Return the value bound to SYMBOL. Errors if SYMBOL is not found."""
+        # BEGIN PROBLEM 1
+        curr = self
+        while curr != None:
+            for key, value in curr.bindings.items():
+                if key == symbol:
+                    return curr.bindings[key]
+            curr = curr.parent
+        # END PROBLEM 1
+        raise SchemeError('unknown identifier: {0}'.format(symbol))
+```
+
+###### PARTII:Procedures
+
+lambda函数,自定义函数,动态作用域
+
+理解我们自己创建的函数是怎么被调用的,以及frame的作用原理和规则
+
+
+
+###### PARTIII:Special Forms
+
+这是关于如何实现let函数,主要是还是理解expr的Pair形式是怎样的.
+
+```py
+def make_let_frame(bindings, env):
+    """Create a child frame of Frame ENV that contains the definitions given in
+    BINDINGS. The Scheme list BINDINGS must have the form of a proper bindings
+    list in a let expression: each item must be a list containing a symbol
+    and a Scheme expression."""
+    if not scheme_listp(bindings):
+        raise SchemeError('bad bindings list in let form')
+    names = vals = nil
+    # BEGIN PROBLEM 14
+    # 传进来的bindings应该是一个pair对象
+    # 我还要倒着构造两个pair串
+    curr = bindings
+    while curr != nil:
+        validate_form(curr.first, 2, 2)
+        binding = curr.first
+        names = Pair(binding.first, names)
+        vals = Pair(binding.rest.first, vals)
+        curr = curr.rest
+    validate_formals(names)
+
+    # 然后还要对于vals表达式进行求值
+    vals = nil
+    curr = bindings
+    while curr != nil:
+        val = scheme_eval(curr.first.rest.first, env)
+        vals = Pair(val, vals)
+        curr = curr.rest
+
+    # END PROBLEM 14
+    return env.make_child_frame(names, vals)
+```
 
 
 
