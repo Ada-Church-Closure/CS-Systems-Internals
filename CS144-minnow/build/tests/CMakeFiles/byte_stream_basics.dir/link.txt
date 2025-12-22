@@ -1,0 +1,1 @@
+/usr/bin/c++  -Wall -Wpedantic -Wextra -Weffc++ -Werror -Wshadow -Wpointer-arith -Wcast-qual -Wformat=2 -Wno-unqualified-std-cast-call -Wno-non-virtual-dtor -g -Wl,--dependency-file=CMakeFiles/byte_stream_basics.dir/link.d CMakeFiles/byte_stream_basics.dir/byte_stream_basics.cc.o -o byte_stream_basics  libminnow_testing_debug.a ../src/libminnow_debug.a ../util/libutil_debug.a

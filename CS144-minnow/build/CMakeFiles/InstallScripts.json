@@ -1,0 +1,11 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/ada/Lessons/CS144-minnow/build/cmake_install.cmake",
+		"/home/ada/Lessons/CS144-minnow/build/util/cmake_install.cmake",
+		"/home/ada/Lessons/CS144-minnow/build/src/cmake_install.cmake",
+		"/home/ada/Lessons/CS144-minnow/build/tests/cmake_install.cmake",
+		"/home/ada/Lessons/CS144-minnow/build/apps/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

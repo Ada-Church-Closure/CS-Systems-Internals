@@ -1,0 +1,187 @@
+Start testing: Dec 23 00:12 CST
+----------------------------------------------------------
+1/39 Testing: compile with bug-checkers
+1/39 Test: compile with bug-checkers
+Command: "/usr/bin/cmake" "--build" "/home/ada/Lessons/CS144-minnow/build" "-t" "functionality_testing" "webget"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"compile with bug-checkers" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+make[4]: warning: -j32 forced in submake: resetting jobserver mode.
+[  6%] Built target minnow_debug
+[ 10%] Built target minnow_testing_debug
+[ 14%] Built target minnow_testing_sanitized
+[ 24%] Built target minnow_sanitized
+[ 38%] Built target util_debug
+[ 52%] Built target util_sanitized
+[ 56%] Built target byte_stream_many_writes_sanitized
+[ 60%] Built target byte_stream_basics
+[ 64%] Built target byte_stream_stress_test
+[ 68%] Built target byte_stream_basics_sanitized
+[ 72%] Built target byte_stream_two_writes
+[ 76%] Built target byte_stream_capacity_sanitized
+[ 80%] Built target byte_stream_capacity
+[ 88%] Built target byte_stream_one_write_sanitized
+[ 88%] Built target byte_stream_many_writes
+[ 92%] Built target byte_stream_one_write
+[ 96%] Built target byte_stream_two_writes_sanitized
+[100%] Built target byte_stream_stress_test_sanitized
+[100%] Built target functionality_testing
+[ 13%] Built target stream_copy
+[ 33%] Built target minnow_debug
+[ 86%] Built target util_debug
+[100%] Built target webget
+<end of output>
+Test time =   0.24 sec
+----------------------------------------------------------
+Test Passed.
+"compile with bug-checkers" end time: Dec 23 00:12 CST
+"compile with bug-checkers" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/39 Testing: t_webget
+2/39 Test: t_webget
+Command: "/home/ada/Lessons/CS144-minnow/tests/webget_t.sh" "/home/ada/Lessons/CS144-minnow/build"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"t_webget" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+HTTP/1.1 200 OK
+Content-type: text/plain
+
+7SmXqWkrLKzVBCEalbSPqBcvs11Pw263K7x4Wv3JckI
+<end of output>
+Test time =   7.27 sec
+----------------------------------------------------------
+Test Passed.
+"t_webget" end time: Dec 23 00:12 CST
+"t_webget" time elapsed: 00:00:07
+----------------------------------------------------------
+
+3/39 Testing: byte_stream_basics
+3/39 Test: byte_stream_basics
+Command: "/home/ada/Lessons/CS144-minnow/build/tests/byte_stream_basics_sanitized"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"byte_stream_basics" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"byte_stream_basics" end time: Dec 23 00:12 CST
+"byte_stream_basics" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/39 Testing: byte_stream_capacity
+4/39 Test: byte_stream_capacity
+Command: "/home/ada/Lessons/CS144-minnow/build/tests/byte_stream_capacity_sanitized"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"byte_stream_capacity" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"byte_stream_capacity" end time: Dec 23 00:12 CST
+"byte_stream_capacity" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/39 Testing: byte_stream_one_write
+5/39 Test: byte_stream_one_write
+Command: "/home/ada/Lessons/CS144-minnow/build/tests/byte_stream_one_write_sanitized"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"byte_stream_one_write" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"byte_stream_one_write" end time: Dec 23 00:12 CST
+"byte_stream_one_write" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/39 Testing: byte_stream_two_writes
+6/39 Test: byte_stream_two_writes
+Command: "/home/ada/Lessons/CS144-minnow/build/tests/byte_stream_two_writes_sanitized"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"byte_stream_two_writes" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"byte_stream_two_writes" end time: Dec 23 00:12 CST
+"byte_stream_two_writes" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/39 Testing: byte_stream_many_writes
+7/39 Test: byte_stream_many_writes
+Command: "/home/ada/Lessons/CS144-minnow/build/tests/byte_stream_many_writes_sanitized"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"byte_stream_many_writes" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"byte_stream_many_writes" end time: Dec 23 00:12 CST
+"byte_stream_many_writes" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/39 Testing: byte_stream_stress_test
+8/39 Test: byte_stream_stress_test
+Command: "/home/ada/Lessons/CS144-minnow/build/tests/byte_stream_stress_test_sanitized"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"byte_stream_stress_test" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.11 sec
+----------------------------------------------------------
+Test Passed.
+"byte_stream_stress_test" end time: Dec 23 00:12 CST
+"byte_stream_stress_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+37/39 Testing: compile with optimization
+37/39 Test: compile with optimization
+Command: "/usr/bin/cmake" "--build" "/home/ada/Lessons/CS144-minnow/build" "-t" "speed_testing"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"compile with optimization" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+make[4]: warning: -j32 forced in submake: resetting jobserver mode.
+[ 23%] Built target minnow_optimized
+[ 84%] Built target util_optimized
+[100%] Built target byte_stream_speed_test
+[100%] Built target speed_testing
+<end of output>
+Test time =   0.14 sec
+----------------------------------------------------------
+Test Passed.
+"compile with optimization" end time: Dec 23 00:12 CST
+"compile with optimization" time elapsed: 00:00:00
+----------------------------------------------------------
+
+38/39 Testing: byte_stream_speed_test
+38/39 Test: byte_stream_speed_test
+Command: "/home/ada/Lessons/CS144-minnow/build/tests/byte_stream_speed_test"
+Directory: /home/ada/Lessons/CS144-minnow/build
+"byte_stream_speed_test" start time: Dec 23 00:12 CST
+Output:
+----------------------------------------------------------
+ByteStream with capacity=32768, write_size=1500, read_size=128 reached 26.53 Gbit/s.
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"byte_stream_speed_test" end time: Dec 23 00:12 CST
+"byte_stream_speed_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Dec 23 00:12 CST

@@ -12,6 +12,6 @@
   >
   > ​	上面的link是2024年版本的存档,你还可以在学习中参考这个[中文手册](https://composingprograms.netlify.app),我也参与了简单的订正.
   
-  - 3.[MIT 6.S081 Operating System Engineering](https://pdos.csail.mit.edu/6.828/2021/schedule.html)	(2025.9-2025.11)
+- 3.[MIT 6.S081 Operating System Engineering](https://pdos.csail.mit.edu/6.828/2021/schedule.html)	(2025.9-2025.11)
 
 > ​	基本完成90%,主要看一些全课程翻译网站和总结,跟着做lab,代码量整体较少,但是很吃对于OS的理解,而且自己debug的话可能会相当困难,课程涉及的几篇论文和剩下的内容还会抽时间再看.
