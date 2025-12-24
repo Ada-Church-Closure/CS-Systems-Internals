@@ -1,3 +1,6 @@
 [submodule "xv6-labs-2021"]
 	path = xv6-labs-2021
 	url = git@github.com:Ada-Church-Closure/xv6-labs-2021.git
+[submodule "CS144-minnow"]
+	path = CS144-minnow
+	url = git@github.com:Ada-Church-Closure/CS144-minnow.git
